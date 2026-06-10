@@ -1,0 +1,44 @@
+ORIGIN 'interpreter';
+
+-- program: descriptor --
+Interpreter
+  (# frag: ^FragmentForm;
+     line: ^Text;
+     root: ^AST;
+     result: ^LoxValue;
+     done: @boolean;
+  do 'Welcome to Lox!' -> screen.putLine;
+     &FragmentForm[] -> frag[];
+     frag.init;
+     loop:
+     (if not done then
+        '> ' -> screen.putText;
+        keyboard.getLine -> line[];
+        line.reset;
+        (gram.Evaluation, line[], screen[], frag[]) -> loxcfl.parser.parse -> root[];
+        (if root[] <> NONE then
+            (1, screen[], loxcfl[])  -> root.dump;
+            screen.newline;
+            eval: (#
+            do root[] -> evaluate 
+              (# error::
+                    (#
+                    do 'error at ' -> screen.putText;
+                       node.start -> screen.putInt;
+                       ' - ' -> screen.putText;
+                       node.end -> screen.putInt;
+                       ': ' -> screen.putText;
+                       message[] -> screen.putLine;
+                       leave eval;
+                    #);
+              #) -> result[];
+              (if result[] <> NONE then
+                  screen[] -> result.dump;
+                  screen.newline;
+              if);
+            #);
+            
+        if);
+        restart loop;
+     if)
+  #)

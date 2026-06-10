@@ -1,0 +1,68 @@
+--- lox : aGrammar : metagrammar---
+Grammar lox:
+
+Option
+  version=1
+  comBegin='/*'
+  comEnd='*/'
+  stringChar='\"'
+  suffix='.lox'
+
+Rule
+
+<Program> ::= <Statements> ;
+<Statements> ::+ <Statement> ';' ;
+
+<Statement> ::| <Declaration> | <Expression> ;
+<Declaration> ::= 'var' <Identifier> ;
+
+<Expression> ::| <Assignment> | <Evaluation> ;
+
+<Assignment> ::= <Variable> '=' <Evaluation> ;
+
+<Evaluation> ::| <LogicOr> | <Equivalence> ;
+<LogicOr> ::= <LeftSide:Evaluation> 'or' <RightSide:Equivalence> ;
+
+<Equivalence> ::| <LogicAnd> | <Equality> ;
+<LogicAnd> ::= <LeftSide:Equivalence> 'and' <RightSide:Equality> ;
+
+<Equality> ::| <Equals> | <NotEquals> | <Comparison> ;
+<Equals> ::= <LeftSide:Equality> '==' <RightSide:Comparison> ;
+<NotEquals> ::= <LeftSide:Equality> '!=' <RightSide:Comparison> ;
+
+<Comparison>::| <Less> | <LessEqual> | <Greater> | <GreaterEqual> | <Term> ;
+<Less> ::= <LeftSide:Comparison> '<' <RightSide:Term> ;
+<LessEqual> ::= <LeftSide:Comparison> '<=' <RightSide:Term> ;
+<Greater> ::= <LeftSide:Comparison> '>' <RightSide:Term> ;
+<GreaterEqual> ::= <LeftSide:Comparison> '>=' <RightSide:Term> ;
+
+<Term> ::| <Addition> | <Subtraction> | <Factor> ;
+<Addition> ::= <LeftSide:Term> '+' <RightSide:Factor> ;
+<Subtraction> ::= <LeftSide:Term> '-' <RightSide:Factor> ;
+
+<Factor> ::| <Multiplication> | <Division> | <Unary> ;
+<Multiplication> ::= <LeftSide:Factor> '*' <RightSide:Unary> ;
+<Division> ::= <LeftSide:Factor> '/' <RightSide:Unary> ;
+
+<Unary> ::| <Negation> | <BoolNegation> | <Primary> ;
+<Negation> ::= '-' <Evaluation:Unary> ;
+<BoolNegation> ::= '!' <Evaluation:Unary> ;
+
+<Primary>       ::| <Variable>
+                  | <Number>
+                  | <Text>
+                  | <BoolExp>
+                  | <NilExp>
+                  | <Grouping> ;
+
+<Grouping> ::= '(' <Evaluation> ')' ;
+
+<BoolExp>  ::| <TrueExp> | <FalseExp> ;
+<TrueExp>  ::= 'true' ;
+<FalseExp> ::= 'false' ;
+<NilExp>   ::= 'nil' ;
+
+<Identifier>    ::= <NameDecl> ;
+<Variable>      ::= <NameAppl> ;
+<Number>        ::= <Const> ;
+<Text>          ::= <String> 

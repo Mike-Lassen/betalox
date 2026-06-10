@@ -1,0 +1,46 @@
+ORIGIN '~beta/basiclib/betaenv';
+-- Lib: attributes --
+grammar:
+(#
+   unExpanded: (# exit -1 #);
+   dummy: (# exit -123872634 #);
+   empty: (# exit -2 #);
+
+   Program: (# exit 1 #);
+   Statements: (# exit 2 #);
+   Statement: (# exit 3 #);
+   Declaration: (# exit 4 #);
+   Expression: (# exit 5 #);
+   Assignment: (# exit 6 #);
+   Evaluation: (# exit 7 #);
+   LogicOr: (# exit 8 #);
+   Equivalence: (# exit 9 #);
+   LogicAnd: (# exit 10 #);
+   Equality: (# exit 11 #);
+   Equals: (# exit 12 #);
+   NotEquals: (# exit 13 #);
+   Comparison: (# exit 14 #);
+   Less: (# exit 15 #);
+   LessEqual: (# exit 16 #);
+   Greater: (# exit 17 #);
+   GreaterEqual: (# exit 18 #);
+   Term: (# exit 19 #);
+   Addition: (# exit 20 #);
+   Subtraction: (# exit 21 #);
+   Factor: (# exit 22 #);
+   Multiplication: (# exit 23 #);
+   Division: (# exit 24 #);
+   Unary: (# exit 25 #);
+   Negation: (# exit 26 #);
+   BoolNegation: (# exit 27 #);
+   Primary: (# exit 28 #);
+   Grouping: (# exit 29 #);
+   BoolExp: (# exit 30 #);
+   TrueExp: (# exit 31 #);
+   FalseExp: (# exit 32 #);
+   NilExp: (# exit 33 #);
+   Identifier: (# exit 34 #);
+   Variable: (# exit 35 #);
+   Number: (# exit 36 #);
+   Text: (# exit 37 #);
+#)

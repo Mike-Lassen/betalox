@@ -1,0 +1,161 @@
+ORIGIN '~beta/newmps/astlevel';
+INCLUDE 'grammar/loxcfl';
+INCLUDE 'grammar/loxgram';
+
+-- lib: attributes --
+Interpreter: AstInterface
+  (# loxcfl: @lox;
+     gram: @grammar;
+
+     
+     loxValueTypes: @
+       (# number: (# exit 1 #);
+          string: (# exit 2 #);
+          boolean: (# exit 3 #);
+       #);
+     LoxValue:
+       (# type:<
+            (# value: @integer
+            do INNER
+            exit value
+            #);
+          dump:<
+            (# output: ^Stream;
+            enter output[]
+            do INNER
+            #);
+          asNumber:<
+            (# value: @integer
+            do INNER
+            exit value
+            #);
+       #);
+     LoxNumber: LoxValue
+       (# value: @integer;
+          type:: (# do loxValueTypes.number -> value #);
+          dump::
+            (#
+            do value -> output.putInt
+            #);
+          asNumber::
+            (#
+            do THIS(LoxNumber).value -> value
+            #);  
+       enter value
+       exit value
+       #);
+     Evaluate:
+       (# error:<
+            (# node: ^AST;
+               message: ^Text;
+            enter (node[], message[])   
+            do INNER;
+               message[] -> screen.putLine;
+               stop;
+            #);
+          evaluation: ^loxcfl.Evaluation;
+          result: ^LoxValue;
+          theVisitor: @loxcfl.treeLevelVisitor
+            (# 
+               assertValue:
+                 (# value: ^LoxValue;
+                    node: ^AST;
+                 enter (value[], node[])
+                 do (if value[] = NONE then
+                        (node[], 'evaluated to nil') -> error;
+                    if);
+                 #);
+               assertNumber:
+                 (# value: ^LoxValue;
+                    node: ^AST;
+                 enter (value[], node[])
+                 do (if value[] = NONE then
+                        (node[], 'evaluated to nil') -> error;
+                    else 
+                        (if value.type <> loxValueTypes.number then
+                            (node[], 'not a number') -> error;
+                        if);
+                    if);
+                 #);
+               assertNonZero:
+                 (# value: @integer;
+                    node: ^AST;
+                 enter (value, node[])
+                 do (if value = 0 then
+                        (node[], 'evaluated to zero') -> error;
+                    if);
+                 #);  
+               visit_Number::
+                 (# input: ^Text;
+                    theNumber: @LoxNumber;
+                    theConst: ^Const;
+                 do N.getConst -> theConst[];
+                    theConst.getText -> input[];
+                    input.reset;
+                    input.getInt -> theNumber;
+                    theNumber[] -> result[];
+                 #);
+               visit_Addition::
+                 (# left: ^LoxValue;
+                    right: ^LoxValue;
+                    theNumber: @LoxNumber;
+                 do N.getLeftSide -> evaluate -> left[];
+                    N.getRightSide -> evaluate -> right[];
+
+                    (left[], N.getLeftSide) -> assertValue;
+                    (if left.type
+                        // loxValueTypes.number then
+                           (right[], N.getRightSide) -> assertValue;
+                           left.asNumber + right.asNumber -> theNumber;
+                           theNumber[] -> result[];
+                        else
+                           (N.getLeftSide, 'not a number') -> error;
+                    if);
+                 #);
+               visit_Subtraction::
+                 (# left: ^LoxValue;
+                    right: ^LoxValue;
+                    theNumber: @LoxNumber;
+                 do N.getLeftSide -> evaluate -> left[];
+                    N.getRightSide -> evaluate -> right[];
+                    (left[], N.getLeftSide) -> assertNumber;
+                    (right[], N.getRightSide) -> assertNumber;
+                    left.asNumber - right.asNumber -> theNumber;
+                    theNumber[] -> result[];
+                 #);
+               visit_Multiplication::
+                 (# left: ^LoxValue;
+                    right: ^LoxValue;
+                    theNumber: @LoxNumber;
+                 do N.getLeftSide -> evaluate -> left[];
+                    N.getRightSide -> evaluate -> right[];
+                    (left[], N.getLeftSide) -> assertNumber;
+                    (right[], N.getRightSide) -> assertNumber;
+                    left.asNumber * right.asNumber -> theNumber;
+                    theNumber[] -> result[];
+                 #);
+               visit_Division::
+                 (# left: ^LoxValue;
+                    right: ^LoxValue;
+                    theNumber: @LoxNumber;
+                 do N.getLeftSide -> evaluate -> left[];
+                    N.getRightSide -> evaluate -> right[];
+                    (left[], N.getLeftSide) -> assertNumber;
+                    (right[], N.getRightSide) -> assertNumber;
+                    (right.asNumber, N.getRightSide) -> assertNonZero;
+                    left.asNumber / right.asNumber -> theNumber;
+                    theNumber[] -> result[];
+                 #);    
+               visit_Grouping::
+                 (#
+                 do N.getEvaluation -> evaluate -> result[];
+                 #);  
+            #);
+       enter evaluation[]
+       do theVisitor[] -> evaluation.accept;
+       exit result[]
+       #);
+
+  do 'grammar/lox-parser' -> loxcfl.init;
+     INNER;
+  #);

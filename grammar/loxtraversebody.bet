@@ -1,0 +1,591 @@
+ORIGIN 'loxtraverse';
+
+--LIB: attributes--
+
+GrammarPath: (# exit '~beta/tutorial/betalox/grammar/lox' #);
+BobsTab:     (# exit '~beta/tutorial/betalox/grammar/lox-parser.btab' #);
+
+-- do_Program_body: DoPart --
+do P.getStatements -> do_Statements;
+
+-- do_Statements_body: DoPart --
+do S.newscan
+   (#
+   do current[] -> do_Statement;
+   #);
+
+-- do_Statement_body: DoPart --
+do (if S.symbol
+    // lox.Declaration then
+       S[] -> do_Declaration;
+       (* sub-alternation <Expression>: *)
+    // lox.Assignment then
+       S[] -> do_Assignment;
+       (* sub-alternation <Evaluation>: *)
+    // lox.LogicOr then
+       S[] -> do_LogicOr;
+       (* sub-alternation <Equivalence>: *)
+    // lox.LogicAnd then
+       S[] -> do_LogicAnd;
+       (* sub-alternation <Equality>: *)
+    // lox.Equals then
+       S[] -> do_Equals;
+    // lox.NotEquals then
+       S[] -> do_NotEquals;
+       (* sub-alternation <Comparison>: *)
+    // lox.Less then
+       S[] -> do_Less;
+    // lox.LessEqual then
+       S[] -> do_LessEqual;
+    // lox.Greater then
+       S[] -> do_Greater;
+    // lox.GreaterEqual then
+       S[] -> do_GreaterEqual;
+       (* sub-alternation <Term>: *)
+    // lox.Addition then
+       S[] -> do_Addition;
+    // lox.Subtraction then
+       S[] -> do_Subtraction;
+       (* sub-alternation <Factor>: *)
+    // lox.Multiplication then
+       S[] -> do_Multiplication;
+    // lox.Division then
+       S[] -> do_Division;
+       (* sub-alternation <Unary>: *)
+    // lox.Negation then
+       S[] -> do_Negation;
+    // lox.BoolNegation then
+       S[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       S[] -> do_Variable;
+    // lox.Number then
+       S[] -> do_Number;
+    // lox.Text then
+       S[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       S[] -> do_TrueExp;
+    // lox.FalseExp then
+       S[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       S[] -> do_NilExp;
+    // lox.Grouping then
+       S[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+       (* End sub-alternation <Unary> *)
+       (* End sub-alternation <Factor> *)
+       (* End sub-alternation <Term> *)
+       (* End sub-alternation <Comparison> *)
+       (* End sub-alternation <Equality> *)
+       (* End sub-alternation <Equivalence> *)
+       (* End sub-alternation <Evaluation> *)
+       (* End sub-alternation <Expression> *)
+    if);
+
+-- do_Declaration_body: DoPart --
+do D.getIdentifier -> do_Identifier;
+
+-- do_Expression_body: DoPart --
+do (if E.symbol
+    // lox.Assignment then
+       E[] -> do_Assignment;
+       (* sub-alternation <Evaluation>: *)
+    // lox.LogicOr then
+       E[] -> do_LogicOr;
+       (* sub-alternation <Equivalence>: *)
+    // lox.LogicAnd then
+       E[] -> do_LogicAnd;
+       (* sub-alternation <Equality>: *)
+    // lox.Equals then
+       E[] -> do_Equals;
+    // lox.NotEquals then
+       E[] -> do_NotEquals;
+       (* sub-alternation <Comparison>: *)
+    // lox.Less then
+       E[] -> do_Less;
+    // lox.LessEqual then
+       E[] -> do_LessEqual;
+    // lox.Greater then
+       E[] -> do_Greater;
+    // lox.GreaterEqual then
+       E[] -> do_GreaterEqual;
+       (* sub-alternation <Term>: *)
+    // lox.Addition then
+       E[] -> do_Addition;
+    // lox.Subtraction then
+       E[] -> do_Subtraction;
+       (* sub-alternation <Factor>: *)
+    // lox.Multiplication then
+       E[] -> do_Multiplication;
+    // lox.Division then
+       E[] -> do_Division;
+       (* sub-alternation <Unary>: *)
+    // lox.Negation then
+       E[] -> do_Negation;
+    // lox.BoolNegation then
+       E[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       E[] -> do_Variable;
+    // lox.Number then
+       E[] -> do_Number;
+    // lox.Text then
+       E[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       E[] -> do_TrueExp;
+    // lox.FalseExp then
+       E[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       E[] -> do_NilExp;
+    // lox.Grouping then
+       E[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+       (* End sub-alternation <Unary> *)
+       (* End sub-alternation <Factor> *)
+       (* End sub-alternation <Term> *)
+       (* End sub-alternation <Comparison> *)
+       (* End sub-alternation <Equality> *)
+       (* End sub-alternation <Equivalence> *)
+       (* End sub-alternation <Evaluation> *)
+    if);
+
+-- do_Assignment_body: DoPart --
+do A.getVariable -> do_Variable;
+   A.getEvaluation -> do_Evaluation;
+
+-- do_Evaluation_body: DoPart --
+do (if E.symbol
+    // lox.LogicOr then
+       E[] -> do_LogicOr;
+       (* sub-alternation <Equivalence>: *)
+    // lox.LogicAnd then
+       E[] -> do_LogicAnd;
+       (* sub-alternation <Equality>: *)
+    // lox.Equals then
+       E[] -> do_Equals;
+    // lox.NotEquals then
+       E[] -> do_NotEquals;
+       (* sub-alternation <Comparison>: *)
+    // lox.Less then
+       E[] -> do_Less;
+    // lox.LessEqual then
+       E[] -> do_LessEqual;
+    // lox.Greater then
+       E[] -> do_Greater;
+    // lox.GreaterEqual then
+       E[] -> do_GreaterEqual;
+       (* sub-alternation <Term>: *)
+    // lox.Addition then
+       E[] -> do_Addition;
+    // lox.Subtraction then
+       E[] -> do_Subtraction;
+       (* sub-alternation <Factor>: *)
+    // lox.Multiplication then
+       E[] -> do_Multiplication;
+    // lox.Division then
+       E[] -> do_Division;
+       (* sub-alternation <Unary>: *)
+    // lox.Negation then
+       E[] -> do_Negation;
+    // lox.BoolNegation then
+       E[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       E[] -> do_Variable;
+    // lox.Number then
+       E[] -> do_Number;
+    // lox.Text then
+       E[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       E[] -> do_TrueExp;
+    // lox.FalseExp then
+       E[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       E[] -> do_NilExp;
+    // lox.Grouping then
+       E[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+       (* End sub-alternation <Unary> *)
+       (* End sub-alternation <Factor> *)
+       (* End sub-alternation <Term> *)
+       (* End sub-alternation <Comparison> *)
+       (* End sub-alternation <Equality> *)
+       (* End sub-alternation <Equivalence> *)
+    if);
+
+-- do_LogicOr_body: DoPart --
+do L.getLeftSide -> do_Evaluation;
+   L.getRightSide -> do_Equivalence;
+
+-- do_Equivalence_body: DoPart --
+do (if E.symbol
+    // lox.LogicAnd then
+       E[] -> do_LogicAnd;
+       (* sub-alternation <Equality>: *)
+    // lox.Equals then
+       E[] -> do_Equals;
+    // lox.NotEquals then
+       E[] -> do_NotEquals;
+       (* sub-alternation <Comparison>: *)
+    // lox.Less then
+       E[] -> do_Less;
+    // lox.LessEqual then
+       E[] -> do_LessEqual;
+    // lox.Greater then
+       E[] -> do_Greater;
+    // lox.GreaterEqual then
+       E[] -> do_GreaterEqual;
+       (* sub-alternation <Term>: *)
+    // lox.Addition then
+       E[] -> do_Addition;
+    // lox.Subtraction then
+       E[] -> do_Subtraction;
+       (* sub-alternation <Factor>: *)
+    // lox.Multiplication then
+       E[] -> do_Multiplication;
+    // lox.Division then
+       E[] -> do_Division;
+       (* sub-alternation <Unary>: *)
+    // lox.Negation then
+       E[] -> do_Negation;
+    // lox.BoolNegation then
+       E[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       E[] -> do_Variable;
+    // lox.Number then
+       E[] -> do_Number;
+    // lox.Text then
+       E[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       E[] -> do_TrueExp;
+    // lox.FalseExp then
+       E[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       E[] -> do_NilExp;
+    // lox.Grouping then
+       E[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+       (* End sub-alternation <Unary> *)
+       (* End sub-alternation <Factor> *)
+       (* End sub-alternation <Term> *)
+       (* End sub-alternation <Comparison> *)
+       (* End sub-alternation <Equality> *)
+    if);
+
+-- do_LogicAnd_body: DoPart --
+do L.getLeftSide -> do_Equivalence;
+   L.getRightSide -> do_Equality;
+
+-- do_Equality_body: DoPart --
+do (if E.symbol
+    // lox.Equals then
+       E[] -> do_Equals;
+    // lox.NotEquals then
+       E[] -> do_NotEquals;
+       (* sub-alternation <Comparison>: *)
+    // lox.Less then
+       E[] -> do_Less;
+    // lox.LessEqual then
+       E[] -> do_LessEqual;
+    // lox.Greater then
+       E[] -> do_Greater;
+    // lox.GreaterEqual then
+       E[] -> do_GreaterEqual;
+       (* sub-alternation <Term>: *)
+    // lox.Addition then
+       E[] -> do_Addition;
+    // lox.Subtraction then
+       E[] -> do_Subtraction;
+       (* sub-alternation <Factor>: *)
+    // lox.Multiplication then
+       E[] -> do_Multiplication;
+    // lox.Division then
+       E[] -> do_Division;
+       (* sub-alternation <Unary>: *)
+    // lox.Negation then
+       E[] -> do_Negation;
+    // lox.BoolNegation then
+       E[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       E[] -> do_Variable;
+    // lox.Number then
+       E[] -> do_Number;
+    // lox.Text then
+       E[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       E[] -> do_TrueExp;
+    // lox.FalseExp then
+       E[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       E[] -> do_NilExp;
+    // lox.Grouping then
+       E[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+       (* End sub-alternation <Unary> *)
+       (* End sub-alternation <Factor> *)
+       (* End sub-alternation <Term> *)
+       (* End sub-alternation <Comparison> *)
+    if);
+
+-- do_Equals_body: DoPart --
+do E.getLeftSide -> do_Equality;
+   E.getRightSide -> do_Comparison;
+
+-- do_NotEquals_body: DoPart --
+do N.getLeftSide -> do_Equality;
+   N.getRightSide -> do_Comparison;
+
+-- do_Comparison_body: DoPart --
+do (if C.symbol
+    // lox.Less then
+       C[] -> do_Less;
+    // lox.LessEqual then
+       C[] -> do_LessEqual;
+    // lox.Greater then
+       C[] -> do_Greater;
+    // lox.GreaterEqual then
+       C[] -> do_GreaterEqual;
+       (* sub-alternation <Term>: *)
+    // lox.Addition then
+       C[] -> do_Addition;
+    // lox.Subtraction then
+       C[] -> do_Subtraction;
+       (* sub-alternation <Factor>: *)
+    // lox.Multiplication then
+       C[] -> do_Multiplication;
+    // lox.Division then
+       C[] -> do_Division;
+       (* sub-alternation <Unary>: *)
+    // lox.Negation then
+       C[] -> do_Negation;
+    // lox.BoolNegation then
+       C[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       C[] -> do_Variable;
+    // lox.Number then
+       C[] -> do_Number;
+    // lox.Text then
+       C[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       C[] -> do_TrueExp;
+    // lox.FalseExp then
+       C[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       C[] -> do_NilExp;
+    // lox.Grouping then
+       C[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+       (* End sub-alternation <Unary> *)
+       (* End sub-alternation <Factor> *)
+       (* End sub-alternation <Term> *)
+    if);
+
+-- do_Less_body: DoPart --
+do L.getLeftSide -> do_Comparison;
+   L.getRightSide -> do_Term;
+
+-- do_LessEqual_body: DoPart --
+do L.getLeftSide -> do_Comparison;
+   L.getRightSide -> do_Term;
+
+-- do_Greater_body: DoPart --
+do G.getLeftSide -> do_Comparison;
+   G.getRightSide -> do_Term;
+
+-- do_GreaterEqual_body: DoPart --
+do G.getLeftSide -> do_Comparison;
+   G.getRightSide -> do_Term;
+
+-- do_Term_body: DoPart --
+do (if T.symbol
+    // lox.Addition then
+       T[] -> do_Addition;
+    // lox.Subtraction then
+       T[] -> do_Subtraction;
+       (* sub-alternation <Factor>: *)
+    // lox.Multiplication then
+       T[] -> do_Multiplication;
+    // lox.Division then
+       T[] -> do_Division;
+       (* sub-alternation <Unary>: *)
+    // lox.Negation then
+       T[] -> do_Negation;
+    // lox.BoolNegation then
+       T[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       T[] -> do_Variable;
+    // lox.Number then
+       T[] -> do_Number;
+    // lox.Text then
+       T[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       T[] -> do_TrueExp;
+    // lox.FalseExp then
+       T[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       T[] -> do_NilExp;
+    // lox.Grouping then
+       T[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+       (* End sub-alternation <Unary> *)
+       (* End sub-alternation <Factor> *)
+    if);
+
+-- do_Addition_body: DoPart --
+do A.getLeftSide -> do_Term;
+   A.getRightSide -> do_Factor;
+
+-- do_Subtraction_body: DoPart --
+do S.getLeftSide -> do_Term;
+   S.getRightSide -> do_Factor;
+
+-- do_Factor_body: DoPart --
+do (if F.symbol
+    // lox.Multiplication then
+       F[] -> do_Multiplication;
+    // lox.Division then
+       F[] -> do_Division;
+       (* sub-alternation <Unary>: *)
+    // lox.Negation then
+       F[] -> do_Negation;
+    // lox.BoolNegation then
+       F[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       F[] -> do_Variable;
+    // lox.Number then
+       F[] -> do_Number;
+    // lox.Text then
+       F[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       F[] -> do_TrueExp;
+    // lox.FalseExp then
+       F[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       F[] -> do_NilExp;
+    // lox.Grouping then
+       F[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+       (* End sub-alternation <Unary> *)
+    if);
+
+-- do_Multiplication_body: DoPart --
+do M.getLeftSide -> do_Factor;
+   M.getRightSide -> do_Unary;
+
+-- do_Division_body: DoPart --
+do D.getLeftSide -> do_Factor;
+   D.getRightSide -> do_Unary;
+
+-- do_Unary_body: DoPart --
+do (if U.symbol
+    // lox.Negation then
+       U[] -> do_Negation;
+    // lox.BoolNegation then
+       U[] -> do_BoolNegation;
+       (* sub-alternation <Primary>: *)
+    // lox.Variable then
+       U[] -> do_Variable;
+    // lox.Number then
+       U[] -> do_Number;
+    // lox.Text then
+       U[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       U[] -> do_TrueExp;
+    // lox.FalseExp then
+       U[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       U[] -> do_NilExp;
+    // lox.Grouping then
+       U[] -> do_Grouping;
+       (* End sub-alternation <Primary> *)
+    if);
+
+-- do_Negation_body: DoPart --
+do N.getEvaluation -> do_Unary;
+
+-- do_BoolNegation_body: DoPart --
+do B.getEvaluation -> do_Unary;
+
+-- do_Primary_body: DoPart --
+do (if P.symbol
+    // lox.Variable then
+       P[] -> do_Variable;
+    // lox.Number then
+       P[] -> do_Number;
+    // lox.Text then
+       P[] -> do_Text;
+       (* sub-alternation <BoolExp>: *)
+    // lox.TrueExp then
+       P[] -> do_TrueExp;
+    // lox.FalseExp then
+       P[] -> do_FalseExp;
+       (* End sub-alternation <BoolExp> *)
+    // lox.NilExp then
+       P[] -> do_NilExp;
+    // lox.Grouping then
+       P[] -> do_Grouping;
+    if);
+
+-- do_Grouping_body: DoPart --
+do G.getEvaluation -> do_Evaluation;
+
+-- do_BoolExp_body: DoPart --
+do (if B.symbol
+    // lox.TrueExp then
+       B[] -> do_TrueExp;
+    // lox.FalseExp then
+       B[] -> do_FalseExp;
+    if);
+
+-- do_TrueExp_body: DoPart --
+do 
+
+-- do_FalseExp_body: DoPart --
+do 
+
+-- do_NilExp_body: DoPart --
+do 
+
+-- do_Identifier_body: DoPart --
+do I.getNameDecl -> do_NameDecl;
+
+-- do_Variable_body: DoPart --
+do V.getNameAppl -> do_NameAppl;
+
+-- do_Number_body: DoPart --
+do N.getConst -> do_Const;
+
+-- do_Text_body: DoPart --
+do T.getString -> do_String;
+
+-- lox_init_body: DoPart --
+do ast.astLevelInit;
+   (* Alternative to using findGrammar: *)
+   ('lox', '.lox', GrammarPath->ast.expandToFullPath)
+     -> ast.registergrammar;
+   lox.init; 
+   BobsTab -> ast.expandToFullPath -> lox.parser.initialize
+   (# #);

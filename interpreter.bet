@@ -1,18 +1,16 @@
 ORIGIN '~beta/newmps/astlevel';
 INCLUDE 'grammar/loxcfl';
 INCLUDE 'grammar/loxgram';
-INCLUDE '~beta/basiclib/numberio'
+INCLUDE '~beta/basiclib/numberio';
 
 -- lib: attributes --
 Interpreter: AstInterface
   (# loxcfl: @lox;
      gram: @grammar;
-
-     
      loxValueKinds: @
-       (# number: (# exit 1 #);
-          string: (# exit 2 #);
-          boolean: (# exit 3 #);
+       (# number: (#  exit 1 #);
+          string: (#  exit 2 #);
+          boolean: (#  exit 3 #);
        #);
      LoxValue:
        (# kind:<
@@ -38,290 +36,292 @@ Interpreter: AstInterface
        #);
      LoxNumber: LoxValue
        (# value: @real;
-          kind:: (# do loxValueKinds.number -> value #);
+          kind::
+            (# 
+            do loxValueKinds.number->value
+            #);
           dump::
-            (#
-            do value -> output.putReal;
+            (# 
+            do value->output.putReal;
             #);
           asNumber::
-            (#
-            do THIS(LoxNumber).value -> value
-            #);  
+            (# 
+            do THIS(LoxNumber).value->value
+            #);
        enter value
        exit value
        #);
      LoxBoolean: LoxValue
        (# value: @boolean;
-          kind:: (# do loxValueKinds.boolean -> value #);
+          kind::
+            (# 
+            do loxValueKinds.boolean->value
+            #);
           dump::
-            (#
+            (# 
             do (if value then
-                   'true' -> screen.putText;
+                   'true'->screen.putText;
                 else
-                   'false' -> screen.putText;   
+                   'false'->screen.putText;
                if)
             #);
           asBoolean::
-            (#
-            do THIS(LoxBoolean).value -> value;
-            #);  
+            (# 
+            do THIS(LoxBoolean).value->value;
+            #);
        #);
-
      Interpret:
        (# expression: ^loxcfl.Expression;
           result: ^LoxValue;
           error:<
             (# node: ^AST;
                message: ^Text;
-            enter (node[], message[])   
+            enter (node[], message[])
             do INNER;
-               message[] -> screen.putLine;
+               message[]->screen.putLine;
                stop;
             #);
-            Evaluate:
-               (# 
-                  expression: ^loxcfl.Expression;
-                  result: ^LoxValue;
-                  theVisitor: @loxcfl.treeLevelVisitor
-                     (# 
-                        assertValue:
-                        (# value: ^LoxValue;
-                           node: ^AST;
-                        enter (value[], node[])
-                        do (if value[] = NONE then
-                                 (node[], 'evaluated to nil') -> error;
-                           if);
-                        #);
-                        assertNumber:
-                        (# value: ^LoxValue;
-                           node: ^AST;
-                        enter (value[], node[])
-                        do (if value[] = NONE then
-                                 (node[], 'evaluated to nil') -> error;
-                           else 
-                                 (if value.kind <> loxValueKinds.number then
-                                    (node[], 'not a number') -> error;
-                                 if);
-                           if);
-                        #);
-                        assertBoolean:
-                        (# value: ^LoxValue;
-                           node: ^AST;
-                        enter (value[], node[])
-                        do (if value[] = NONE then
-                                 (node[], 'evaluated to nil') -> error;
-                           else 
-                                 (if value.kind <> loxValueKinds.boolean then
-                                    (node[], 'not a boolean') -> error;
-                                 if);
-                           if);
-                        #);  
-                        assertNonZero:
-                        (# value: @integer;
-                           node: ^AST;
-                        enter (value, node[])
-                        do (if value = 0 then
-                                 (node[], 'evaluated to zero') -> error;
-                           if);
-                        #);
-
-                        Operation:
-                        (# Type:< LoxValue;
-                           result: ^Type;
-                        do &Type[] -> result[];
-                           INNER;
-                        exit result[]
-                        #);
-                        BinaryOperands: Operation
-                        (# leftSide: ^loxcfl.Expression;
-                           rightSide: ^loxcfl.Expression;
-                           left: ^LoxValue;
-                           right: ^LoxValue;
-                        enter (leftSide[], rightSide[])   
-                        do leftSide[] -> Evaluate -> left[];
-                           rightSide[] -> Evaluate -> right[];
-                           (left[], leftSide[]) -> assertNumber;
-                           (right[], rightSide[]) -> assertNumber;
-                           INNER;
-                        #);
-                        BinaryMath: BinaryOperands
-                        (# Type:: LoxNumber;
-                        do INNER;
-                        #);
-                        Add: BinaryMath 
-                        (# 
-                        do left.asNumber + right.asNumber -> result.value 
-                        #);
-                        Subtract: BinaryMath
-                        (# 
-                        do left.asNumber - right.asNumber -> result.value 
-                        #);
-                        Multiply: BinaryMath 
-                        (# 
-                        do left.asNumber * right.asNumber -> result.value 
-                        #);
-                        Divide: BinaryMath 
-                        (# 
-                        do (right.asNumber, rightSide[]) -> assertNonZero;
-                           left.asNumber / right.asNumber -> result.value;
-                        #);
-                        Comparison: BinaryOperands
-                        (# Type:: LoxBoolean;
-                        do INNER;
-                        #);
-                        Less: Comparison
-                        (#
-                        do left.asNumber < right.asNumber -> result.value;
-                        #);
-                        LessEqual: Comparison
-                        (#
-                        do left.asNumber <= right.asNumber -> result.value;
-                        #);
-                        Greater: Comparison
-                        (#
-                        do left.asNumber > right.asNumber -> result.value;
-                        #);
-                        GreaterEqual: Comparison
-                        (#
-                        do left.asNumber >= right.asNumber -> result.value;
-                        #);
-                        Equal: Comparison
-                        (#
-                        do left.asNumber = right.asNumber -> result.value;
-                        #);
-                        NotEqual: Comparison
-                        (#
-                        do left.asNumber <> right.asNumber -> result.value;
-                        #);
-                        AndOperation: Operation
-                        (# Type:: LoxBoolean;
-                           leftSide: ^loxcfl.Expression;
-                           rightSide: ^loxcfl.Expression;
-                           left: ^LoxValue;
-                           right: ^LoxValue;
-                        enter (leftSide[], rightSide[])
-                        do leftSide[] -> Evaluate -> left[];
-                           (left[], leftSide[]) -> assertBoolean;
-                           (if left.asBoolean then
-                                 rightSide[] -> Evaluate -> right[];
-                                 (right[], rightSide[]) -> assertBoolean;
-                                 right.asBoolean -> result.value;
-                              else
-                                 false -> result.value;
-                           if);
-                        #);
-                        OrOperation: Operation
-                        (# Type:: LoxBoolean;
-                           leftSide: ^loxcfl.Expression;
-                           rightSide: ^loxcfl.Expression;
-                           left: ^LoxValue;
-                           right: ^LoxValue;
-                        enter (leftSide[], rightSide[])
-                        do leftSide[] -> Evaluate -> left[];
-                           (left[], leftSide[]) -> assertBoolean;
-                           (if NOT left.asBoolean then
-                                 rightSide[] -> Evaluate -> right[];
-                                 (right[], rightSide[]) -> assertBoolean;
-                                 right.asBoolean -> result.value;
-                              else
-                                 true -> result.value;
-                           if);
-                        #);
-               
-                        visit_Number::
-                        (# input: ^Text;
-                           theNumber: @LoxNumber;
-                           theConst: ^Const;
-                        do N.getConst -> theConst[];
-                           theConst.getText -> input[];
-                           input.reset;
-                           input.getNumber
-                              (# integerValue::
-                                    (#
-                                    do value -> theNumber.value;
-                                    #);
-                                 basedValue::
-                                    (#
-                                    do value -> theNumber.value;
-                                    #);
-                                 realValue::
-                                    (#
-                                    do value -> theNumber.value;
-                                    #);  
-                              #);
-                           theNumber[] -> result[];
-                        #);
-                        visit_TrueExp::
-                        (# theBoolean: @LoxBoolean;
-                        do true -> theBoolean.value;
-                           theBoolean[] -> result[];
-                        #);
-                        visit_FalseExp::
-                        (# theBoolean: @LoxBoolean;
-                        do false -> theBoolean.value;
-                           theBoolean[] -> result[];
-                        #);
-                        visit_Addition::
-                        (# 
-                        do (N.getLeftSide, N.getRightSide) -> Add -> result[];
-                        #);
-                        visit_Subtraction::
-                        (# 
-                        do (N.getLeftSide, N.getRightSide) -> Subtract -> result[];
-                        #);
-                        visit_Multiplication::
-                        (# 
-                        do (N.getLeftSide, N.getRightSide) -> Multiply -> result[];
-                        #);
-                        visit_Division::
-                        (# 
-                        do (N.getLeftSide, N.getRightSide) -> Divide -> result[];
-                        #);    
-                        visit_Grouping::
-                        (#
-                        do N.getEvaluation -> evaluate -> result[];
-                        #);
-                        visit_Equals::
-                        (#
-                        do (N.getLeftSide, N.getRightSide) -> Equal -> result[];
-                        #);
-                        visit_NotEquals::
-                        (#
-                        do (N.getLeftSide, N.getRightSide) -> NotEqual -> result[];
-                        #);
-                        visit_Less::
-                        (#
-                        do (N.getLeftSide, N.getRightSide) -> Less -> result[];
-                        #);
-                        visit_LessEqual::
-                        (#
-                        do (N.getLeftSide, N.getRightSide) -> LessEqual -> result[];
-                        #);
-                        visit_Greater::
-                        (#
-                        do (N.getLeftSide, N.getRightSide) -> Greater -> result[];
-                        #);
-                        visit_GreaterEqual::
-                        (#
-                        do (N.getLeftSide, N.getRightSide) -> GreaterEqual -> result[];
-                        #);
-                        visit_LogicAnd::
-                        (#
-                        do (N.getLeftSide, N.getRightSide) -> AndOperation -> result[];
-                        #);
-                        visit_LogicOr::
-                        (#
-                        do (N.getLeftSide, N.getRightSide) -> OrOperation -> result[];
-                        #);    
-                     #);
-               enter expression[]
-               do theVisitor[] -> expression.accept;
-               exit result[]
-               #);
+          Evaluate:
+            (# expression: ^loxcfl.Expression;
+               result: ^LoxValue;
+               theVisitor: @loxcfl.treeLevelVisitor
+                 (# assertValue:
+                      (# value: ^LoxValue;
+                         node: ^AST;
+                      enter (value[], node[])
+                      do (if value[] = none then
+                             (node[], 'evaluated to nil')->error;
+                         if);
+                      #);
+                    assertNumber:
+                      (# value: ^LoxValue;
+                         node: ^AST;
+                      enter (value[], node[])
+                      do (if value[] = none then
+                             (node[], 'evaluated to nil')->error;
+                          else
+                             (if value.kind <> loxValueKinds.number then
+                                 (node[], 'not a number')->error;
+                             if);
+                         if);
+                      #);
+                    assertBoolean:
+                      (# value: ^LoxValue;
+                         node: ^AST;
+                      enter (value[], node[])
+                      do (if value[] = none then
+                             (node[], 'evaluated to nil')->error;
+                          else
+                             (if value.kind <> loxValueKinds.boolean then
+                                 (node[], 'not a boolean')->error;
+                             if);
+                         if);
+                      #);
+                    assertNonZero:
+                      (# value: @integer;
+                         node: ^AST;
+                      enter (value, node[])
+                      do (if value = 0 then
+                             (node[], 'evaluated to zero')->error;
+                         if);
+                      #);
+                    Operation:
+                      (# Type:< LoxValue;
+                         result: ^Type;
+                      do &Type[]->result[];
+                         INNER;
+                      exit result[]
+                      #);
+                    BinaryOperands: Operation
+                      (# leftSide: ^loxcfl.Expression;
+                         rightSide: ^loxcfl.Expression;
+                         left: ^LoxValue;
+                         right: ^LoxValue;
+                      enter (leftSide[], rightSide[])
+                      do leftSide[]->Evaluate->left[];
+                         rightSide[]->Evaluate->right[];
+                         (left[], leftSide[])->assertNumber;
+                         (right[], rightSide[])->assertNumber;
+                         INNER;
+                      #);
+                    BinaryMath: BinaryOperands
+                      (# Type:: LoxNumber;
+                      do INNER;
+                      #);
+                    Add: BinaryMath
+                      (# 
+                      do left.asNumber+right.asNumber->result.value
+                      #);
+                    Subtract: BinaryMath
+                      (# 
+                      do left.asNumber-right.asNumber->result.value
+                      #);
+                    Multiply: BinaryMath
+                      (# 
+                      do left.asNumber*right.asNumber->result.value
+                      #);
+                    Divide: BinaryMath
+                      (# 
+                      do (right.asNumber, rightSide[])->assertNonZero;
+                         left.asNumber / right.asNumber->result.value;
+                      #);
+                    Comparison: BinaryOperands
+                      (# Type:: LoxBoolean;
+                      do INNER;
+                      #);
+                    Less: Comparison
+                      (# 
+                      do left.asNumber < right.asNumber->result.value;
+                      #);
+                    LessEqual: Comparison
+                      (# 
+                      do left.asNumber <= right.asNumber->result.value;
+                      #);
+                    Greater: Comparison
+                      (# 
+                      do left.asNumber > right.asNumber->result.value;
+                      #);
+                    GreaterEqual: Comparison
+                      (# 
+                      do left.asNumber >= right.asNumber->result.value;
+                      #);
+                    Equal: Comparison
+                      (# 
+                      do left.asNumber = right.asNumber->result.value;
+                      #);
+                    NotEqual: Comparison
+                      (# 
+                      do left.asNumber <> right.asNumber->result.value;
+                      #);
+                    AndOperation: Operation
+                      (# Type:: LoxBoolean;
+                         leftSide: ^loxcfl.Expression;
+                         rightSide: ^loxcfl.Expression;
+                         left: ^LoxValue;
+                         right: ^LoxValue;
+                      enter (leftSide[], rightSide[])
+                      do leftSide[]->Evaluate->left[];
+                         (left[], leftSide[])->assertBoolean;
+                         (if left.asBoolean then
+                             rightSide[]->Evaluate->right[];
+                             (right[], rightSide[])->assertBoolean;
+                             right.asBoolean->result.value;
+                          else
+                             false->result.value;
+                         if);
+                      #);
+                    OrOperation: Operation
+                      (# Type:: LoxBoolean;
+                         leftSide: ^loxcfl.Expression;
+                         rightSide: ^loxcfl.Expression;
+                         left: ^LoxValue;
+                         right: ^LoxValue;
+                      enter (leftSide[], rightSide[])
+                      do leftSide[]->Evaluate->left[];
+                         (left[], leftSide[])->assertBoolean;
+                         (if not left.asBoolean then
+                             rightSide[]->Evaluate->right[];
+                             (right[], rightSide[])->assertBoolean;
+                             right.asBoolean->result.value;
+                          else
+                             true->result.value;
+                         if);
+                      #);
+                    visit_Number::
+                      (# input: ^Text;
+                         theNumber: @LoxNumber;
+                         theConst: ^Const;
+                      do N.getConst->theConst[];
+                         theConst.getText->input[];
+                         input.reset;
+                         input.getNumber
+                           (# integerValue::
+                                (# 
+                                do value->theNumber.value;
+                                #);
+                              basedValue::
+                                (# 
+                                do value->theNumber.value;
+                                #);
+                              realValue::
+                                (# 
+                                do value->theNumber.value;
+                                #);
+                           #);
+                         theNumber[]->result[];
+                      #);
+                    visit_TrueExp::
+                      (# theBoolean: @LoxBoolean;
+                      do true->theBoolean.value;
+                         theBoolean[]->result[];
+                      #);
+                    visit_FalseExp::
+                      (# theBoolean: @LoxBoolean;
+                      do false->theBoolean.value;
+                         theBoolean[]->result[];
+                      #);
+                    visit_Addition::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->Add->result[];
+                      #);
+                    visit_Subtraction::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->Subtract->result[];
+                      #);
+                    visit_Multiplication::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->Multiply->result[];
+                      #);
+                    visit_Division::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->Divide->result[];
+                      #);
+                    visit_Grouping::
+                      (# 
+                      do N.getEvaluation->evaluate->result[];
+                      #);
+                    visit_Equals::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->Equal->result[];
+                      #);
+                    visit_NotEquals::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->NotEqual->result[];
+                      #);
+                    visit_Less::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->Less->result[];
+                      #);
+                    visit_LessEqual::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->LessEqual->result[];
+                      #);
+                    visit_Greater::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->Greater->result[];
+                      #);
+                    visit_GreaterEqual::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->GreaterEqual->result[];
+                      #);
+                    visit_LogicAnd::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->AndOperation->result[];
+                      #);
+                    visit_LogicOr::
+                      (# 
+                      do (N.getLeftSide, N.getRightSide)->OrOperation->result[];
+                      #);
+                 #);
+            enter expression[]
+            do theVisitor[]->expression.accept;
+            exit result[]
+            #);
        enter expression[]
-       do expression[] -> Evaluate -> result[];
-       exit result[]     
+       do expression[]->Evaluate->result[];
+       exit result[]
        #);
-  do 'grammar/lox-parser' -> loxcfl.init;
+  do 'grammar/lox-parser'->loxcfl.init;
      INNER;
   #);
+

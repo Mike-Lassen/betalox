@@ -2,6 +2,7 @@ ORIGIN '~beta/newmps/astlevel';
 INCLUDE 'grammar/loxcfl';
 INCLUDE 'grammar/loxgram';
 INCLUDE '~beta/basiclib/numberio';
+INCLUDE '~beta/containers/dictionary';
 
 -- lib: attributes --
 Interpreter: AstInterface
@@ -70,6 +71,27 @@ Interpreter: AstInterface
             do THIS(LoxBoolean).value->value;
             #);
        #);
+     ValueDictionary: dictionary
+       (# key:: Text;
+          element:: LoxValue;
+          hashFunction::
+            (# 
+            do k.scanAll
+                 (# 
+                 do 131*value+ch->value;
+                 #);
+               (if value < 0 then
+                   - value->value;
+               if);
+            #);
+          keyEqual::
+            (# 
+            do left[]->right.equal->value;
+            #);
+       #);
+
+     globals: @ValueDictionary;
+
      Interpret:
        (# expression: ^loxcfl.Expression;
           result: ^LoxValue;
@@ -227,6 +249,19 @@ Interpreter: AstInterface
                              true->result.value;
                          if);
                       #);
+                    visit_Assignment::
+                      (# name: ^loxcfl.Name;
+                         decl: ^NameDecl;
+                      do N.getName -> name[];
+                         name.getNameDecl -> decl[];
+                         N.getExpression -> Evaluate -> result[];
+                         (decl.getText, result[]) -> globals.associate;
+                      #);
+                    visit_Variable::
+                      (# appl: ^NameAppl;
+                      do N.getNameAppl -> appl[];
+                         appl.getText -> globals.lookup -> result[];
+                      #);
                     visit_Number::
                       (# input: ^Text;
                          theNumber: @LoxNumber;
@@ -322,6 +357,7 @@ Interpreter: AstInterface
        exit result[]
        #);
   do 'grammar/lox-parser'->loxcfl.init;
+     globals.init;
      INNER;
   #);
 

@@ -4,7 +4,7 @@ ORIGIN 'interpreter';
 Interpreter
   (# frag: ^FragmentForm;
      line: ^Text;
-     root: ^AST;
+     root: ^loxcfl.Expression;
      result: ^LoxValue;
      done: @boolean;
   do 'Welcome to Lox!' -> screen.putLine;
@@ -15,7 +15,7 @@ Interpreter
         '> ' -> screen.putText;
         keyboard.getLine -> line[];
         line.reset;
-        (gram.Evaluation, line[], screen[], frag[]) -> loxcfl.parser.parse -> root[];
+        (gram.Expression, line[], screen[], frag[]) -> loxcfl.parser.parse -> root[];
         (if root[] <> NONE then
             (1, screen[], loxcfl[])  -> root.dump;
             screen.newline;

@@ -10,15 +10,11 @@ Option
 
 Rule
 
-<Program> ::= <Statements> ;
-<Statements> ::+ <Statement> ';' ;
-
-<Statement> ::| <Declaration> | <Expression> ;
-<Declaration> ::= 'var' <Identifier> ;
-
 <Expression> ::| <Assignment> | <Evaluation> ;
 
-<Assignment> ::= <Variable> '=' <Evaluation> ;
+<Assignment> ::= <Name> '=' <Expression> ;
+
+<Name> ::= <NameDecl> ;
 
 <Evaluation> ::| <LogicOr> | <Equivalence> ;
 <LogicOr> ::= <LeftSide:Evaluation> 'or' <RightSide:Equivalence> ;
@@ -62,7 +58,6 @@ Rule
 <FalseExp> ::= 'false' ;
 <NilExp>   ::= 'nil' ;
 
-<Identifier>    ::= <NameDecl> ;
 <Variable>      ::= <NameAppl> ;
 <Number>        ::= <Const> ;
 <Text>          ::= <String> 

@@ -2,90 +2,8 @@ ORIGIN 'loxtraverse';
 
 --LIB: attributes--
 
-GrammarPath: (# exit '~beta/tutorial/betalox/grammar/lox' #);
-BobsTab:     (# exit '~beta/tutorial/betalox/grammar/lox-parser.btab' #);
-
--- do_Program_body: DoPart --
-do P.getStatements -> do_Statements;
-
--- do_Statements_body: DoPart --
-do S.newscan
-   (#
-   do current[] -> do_Statement;
-   #);
-
--- do_Statement_body: DoPart --
-do (if S.symbol
-    // lox.Declaration then
-       S[] -> do_Declaration;
-       (* sub-alternation <Expression>: *)
-    // lox.Assignment then
-       S[] -> do_Assignment;
-       (* sub-alternation <Evaluation>: *)
-    // lox.LogicOr then
-       S[] -> do_LogicOr;
-       (* sub-alternation <Equivalence>: *)
-    // lox.LogicAnd then
-       S[] -> do_LogicAnd;
-       (* sub-alternation <Equality>: *)
-    // lox.Equals then
-       S[] -> do_Equals;
-    // lox.NotEquals then
-       S[] -> do_NotEquals;
-       (* sub-alternation <Comparison>: *)
-    // lox.Less then
-       S[] -> do_Less;
-    // lox.LessEqual then
-       S[] -> do_LessEqual;
-    // lox.Greater then
-       S[] -> do_Greater;
-    // lox.GreaterEqual then
-       S[] -> do_GreaterEqual;
-       (* sub-alternation <Term>: *)
-    // lox.Addition then
-       S[] -> do_Addition;
-    // lox.Subtraction then
-       S[] -> do_Subtraction;
-       (* sub-alternation <Factor>: *)
-    // lox.Multiplication then
-       S[] -> do_Multiplication;
-    // lox.Division then
-       S[] -> do_Division;
-       (* sub-alternation <Unary>: *)
-    // lox.Negation then
-       S[] -> do_Negation;
-    // lox.BoolNegation then
-       S[] -> do_BoolNegation;
-       (* sub-alternation <Primary>: *)
-    // lox.Variable then
-       S[] -> do_Variable;
-    // lox.Number then
-       S[] -> do_Number;
-    // lox.Text then
-       S[] -> do_Text;
-       (* sub-alternation <BoolExp>: *)
-    // lox.TrueExp then
-       S[] -> do_TrueExp;
-    // lox.FalseExp then
-       S[] -> do_FalseExp;
-       (* End sub-alternation <BoolExp> *)
-    // lox.NilExp then
-       S[] -> do_NilExp;
-    // lox.Grouping then
-       S[] -> do_Grouping;
-       (* End sub-alternation <Primary> *)
-       (* End sub-alternation <Unary> *)
-       (* End sub-alternation <Factor> *)
-       (* End sub-alternation <Term> *)
-       (* End sub-alternation <Comparison> *)
-       (* End sub-alternation <Equality> *)
-       (* End sub-alternation <Equivalence> *)
-       (* End sub-alternation <Evaluation> *)
-       (* End sub-alternation <Expression> *)
-    if);
-
--- do_Declaration_body: DoPart --
-do D.getIdentifier -> do_Identifier;
+GrammarPath: (# exit 'C:/beta/betalox/grammar/lox' #);
+BobsTab:     (# exit 'C:/beta/betalox/grammar/lox-parser.btab' #);
 
 -- do_Expression_body: DoPart --
 do (if E.symbol
@@ -154,8 +72,11 @@ do (if E.symbol
     if);
 
 -- do_Assignment_body: DoPart --
-do A.getVariable -> do_Variable;
-   A.getEvaluation -> do_Evaluation;
+do A.getName -> do_Name;
+   A.getExpression -> do_Expression;
+
+-- do_Name_body: DoPart --
+do N.getNameDecl -> do_NameDecl;
 
 -- do_Evaluation_body: DoPart --
 do (if E.symbol
@@ -568,9 +489,6 @@ do
 
 -- do_NilExp_body: DoPart --
 do 
-
--- do_Identifier_body: DoPart --
-do I.getNameDecl -> do_NameDecl;
 
 -- do_Variable_body: DoPart --
 do V.getNameAppl -> do_NameAppl;

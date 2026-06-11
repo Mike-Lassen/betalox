@@ -1,0 +1,7 @@
+*.ast
+nti_ms
+*.exe
+*.pdb
+*.bobs
+*.lst
+tables

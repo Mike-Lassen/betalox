@@ -13,26 +13,6 @@ lox_traverse:
   (# ast: @astInterface (* An instance of the AST interface *);
      lox: @ast.lox;
 
-     do_Program: (* cons *)
-       (# P: ^lox.Program
-       enter P[]
-       <<SLOT do_Program_body: DoPart>>
-       #);
-     do_Statements: (* list *)
-       (# S: ^lox.Statements
-       enter S[]
-       <<SLOT do_Statements_body: DoPart>>
-       #);
-     do_Statement: (* alternation *)
-       (# S: ^lox.Statement
-       enter S[]
-       <<SLOT do_Statement_body: DoPart>>
-       #);
-     do_Declaration: (* cons *)
-       (# D: ^lox.Declaration
-       enter D[]
-       <<SLOT do_Declaration_body: DoPart>>
-       #);
      do_Expression: (* alternation *)
        (# E: ^lox.Expression
        enter E[]
@@ -42,6 +22,11 @@ lox_traverse:
        (# A: ^lox.Assignment
        enter A[]
        <<SLOT do_Assignment_body: DoPart>>
+       #);
+     do_Name: (* cons *)
+       (# N: ^lox.Name
+       enter N[]
+       <<SLOT do_Name_body: DoPart>>
        #);
      do_Evaluation: (* alternation *)
        (# E: ^lox.Evaluation
@@ -177,11 +162,6 @@ lox_traverse:
        (# N: ^lox.NilExp
        enter N[]
        <<SLOT do_NilExp_body: DoPart>>
-       #);
-     do_Identifier: (* cons *)
-       (# I: ^lox.Identifier
-       enter I[]
-       <<SLOT do_Identifier_body: DoPart>>
        #);
      do_Variable: (* cons *)
        (# V: ^lox.Variable

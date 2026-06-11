@@ -1,6 +1,7 @@
 ORIGIN '~beta/newmps/astlevel';
 INCLUDE 'grammar/loxcfl';
 INCLUDE 'grammar/loxgram';
+INCLUDE '~beta/basiclib/numberio'
 
 -- lib: attributes --
 Interpreter: AstInterface
@@ -25,17 +26,17 @@ Interpreter: AstInterface
             do INNER
             #);
           asNumber:<
-            (# value: @integer
+            (# value: @real
             do INNER
             exit value
             #);
        #);
      LoxNumber: LoxValue
-       (# value: @integer;
+       (# value: @real;
           type:: (# do loxValueTypes.number -> value #);
           dump::
             (#
-            do value -> output.putInt
+            do value -> output.putReal;
             #);
           asNumber::
             (#
@@ -53,7 +54,7 @@ Interpreter: AstInterface
                message[] -> screen.putLine;
                stop;
             #);
-          evaluation: ^loxcfl.Evaluation;
+          expression: ^loxcfl.Expression;
           result: ^LoxValue;
           theVisitor: @loxcfl.treeLevelVisitor
             (# 
@@ -84,7 +85,45 @@ Interpreter: AstInterface
                  do (if value = 0 then
                         (node[], 'evaluated to zero') -> error;
                     if);
-                 #);  
+                 #);
+
+               Operation:
+                 (# Type:< LoxValue;
+                    result: ^Type;
+                 do &Type[] -> result[];
+                    INNER;
+                 exit result[]
+                 #);
+               BinaryMath: Operation
+                 (# Type:: LoxNumber;
+                    leftSide: ^loxcfl.Expression;
+                    rightSide: ^loxcfl.Expression;
+                    left: ^LoxValue;
+                    right: ^LoxValue;
+                 enter (leftSide[], rightSide[])   
+                 do leftSide[] -> Evaluate -> left[];
+                    rightSide[] -> Evaluate -> right[];
+                    (left[], leftSide[]) -> assertNumber;
+                    (right[], rightSide[]) -> assertNumber;
+                    INNER;
+                 #);
+               Add: BinaryMath 
+                 (# 
+                 do left.asNumber + right.asNumber -> result.value 
+                 #);
+               Subtract: BinaryMath
+                 (# 
+                 do left.asNumber - right.asNumber -> result.value 
+                 #);
+               Multiply: BinaryMath 
+                 (# 
+                 do left.asNumber * right.asNumber -> result.value 
+                 #);
+               Divide: BinaryMath 
+                 (# 
+                 do (right.asNumber, rightSide[]) -> assertNonZero;
+                    left.asNumber / right.asNumber -> result.value;
+                 #);
                visit_Number::
                  (# input: ^Text;
                     theNumber: @LoxNumber;
@@ -92,67 +131,45 @@ Interpreter: AstInterface
                  do N.getConst -> theConst[];
                     theConst.getText -> input[];
                     input.reset;
-                    input.getInt -> theNumber;
+                    input.getNumber
+                      (# integerValue::
+                           (#
+                           do value -> theNumber.value;
+                           #);
+                         basedValue::
+                           (#
+                           do value -> theNumber.value;
+                           #);
+                         realValue::
+                           (#
+                           do value -> theNumber.value;
+                           #);  
+                      #);
                     theNumber[] -> result[];
                  #);
                visit_Addition::
-                 (# left: ^LoxValue;
-                    right: ^LoxValue;
-                    theNumber: @LoxNumber;
-                 do N.getLeftSide -> evaluate -> left[];
-                    N.getRightSide -> evaluate -> right[];
-
-                    (left[], N.getLeftSide) -> assertValue;
-                    (if left.type
-                        // loxValueTypes.number then
-                           (right[], N.getRightSide) -> assertValue;
-                           left.asNumber + right.asNumber -> theNumber;
-                           theNumber[] -> result[];
-                        else
-                           (N.getLeftSide, 'not a number') -> error;
-                    if);
+                 (# 
+                 do (N.getLeftSide, N.getRightSide) -> Add -> result[];
                  #);
                visit_Subtraction::
-                 (# left: ^LoxValue;
-                    right: ^LoxValue;
-                    theNumber: @LoxNumber;
-                 do N.getLeftSide -> evaluate -> left[];
-                    N.getRightSide -> evaluate -> right[];
-                    (left[], N.getLeftSide) -> assertNumber;
-                    (right[], N.getRightSide) -> assertNumber;
-                    left.asNumber - right.asNumber -> theNumber;
-                    theNumber[] -> result[];
+                 (# 
+                 do (N.getLeftSide, N.getRightSide) -> Subtract -> result[];
                  #);
                visit_Multiplication::
-                 (# left: ^LoxValue;
-                    right: ^LoxValue;
-                    theNumber: @LoxNumber;
-                 do N.getLeftSide -> evaluate -> left[];
-                    N.getRightSide -> evaluate -> right[];
-                    (left[], N.getLeftSide) -> assertNumber;
-                    (right[], N.getRightSide) -> assertNumber;
-                    left.asNumber * right.asNumber -> theNumber;
-                    theNumber[] -> result[];
+                 (# 
+                 do (N.getLeftSide, N.getRightSide) -> Multiply -> result[];
                  #);
                visit_Division::
-                 (# left: ^LoxValue;
-                    right: ^LoxValue;
-                    theNumber: @LoxNumber;
-                 do N.getLeftSide -> evaluate -> left[];
-                    N.getRightSide -> evaluate -> right[];
-                    (left[], N.getLeftSide) -> assertNumber;
-                    (right[], N.getRightSide) -> assertNumber;
-                    (right.asNumber, N.getRightSide) -> assertNonZero;
-                    left.asNumber / right.asNumber -> theNumber;
-                    theNumber[] -> result[];
+                 (# 
+                 do (N.getLeftSide, N.getRightSide) -> Divide -> result[];
                  #);    
                visit_Grouping::
                  (#
                  do N.getEvaluation -> evaluate -> result[];
                  #);  
             #);
-       enter evaluation[]
-       do theVisitor[] -> evaluation.accept;
+       enter expression[]
+       do theVisitor[] -> expression.accept;
        exit result[]
        #);
 

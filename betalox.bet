@@ -20,7 +20,7 @@ Interpreter
             (1, screen[], loxcfl[])  -> root.dump;
             screen.newline;
             eval: (#
-            do root[] -> evaluate 
+            do root[] -> Interpret 
               (# error::
                     (#
                     do 'error at ' -> screen.putText;

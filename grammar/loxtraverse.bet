@@ -13,6 +13,26 @@ lox_traverse:
   (# ast: @astInterface (* An instance of the AST interface *);
      lox: @ast.lox;
 
+     do_Program: (* list *)
+       (# P: ^lox.Program
+       enter P[]
+       <<SLOT do_Program_body: DoPart>>
+       #);
+     do_Statement: (* alternation *)
+       (# S: ^lox.Statement
+       enter S[]
+       <<SLOT do_Statement_body: DoPart>>
+       #);
+     do_ExprStmt: (* cons *)
+       (# E: ^lox.ExprStmt
+       enter E[]
+       <<SLOT do_ExprStmt_body: DoPart>>
+       #);
+     do_PrintStmt: (* cons *)
+       (# P: ^lox.PrintStmt
+       enter P[]
+       <<SLOT do_PrintStmt_body: DoPart>>
+       #);
      do_Expression: (* alternation *)
        (# E: ^lox.Expression
        enter E[]

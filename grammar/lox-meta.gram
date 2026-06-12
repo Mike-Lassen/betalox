@@ -2,13 +2,22 @@
 Grammar lox:
 
 Option
-  version=1
+  version=2
   comBegin='/*'
   comEnd='*/'
   stringChar='\"'
   suffix='.lox'
 
 Rule
+
+<Program> ::+ <Statement> ;
+
+<Statement> ::| <ExprStmt> | <PrintStmt> ;
+
+<ExprStmt> ::= <Expression> ';' ;
+
+<PrintStmt> ::= 'print' <Expression> ';' ;
+
 
 <Expression> ::| <Assignment> | <Evaluation> ;
 

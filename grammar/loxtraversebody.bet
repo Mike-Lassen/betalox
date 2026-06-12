@@ -5,6 +5,26 @@ ORIGIN 'loxtraverse';
 GrammarPath: (# exit 'C:/beta/betalox/grammar/lox' #);
 BobsTab:     (# exit 'C:/beta/betalox/grammar/lox-parser.btab' #);
 
+-- do_Program_body: DoPart --
+do P.newscan
+   (#
+   do current[] -> do_Statement;
+   #);
+
+-- do_Statement_body: DoPart --
+do (if S.symbol
+    // lox.ExprStmt then
+       S[] -> do_ExprStmt;
+    // lox.PrintStmt then
+       S[] -> do_PrintStmt;
+    if);
+
+-- do_ExprStmt_body: DoPart --
+do E.getExpression -> do_Expression;
+
+-- do_PrintStmt_body: DoPart --
+do P.getExpression -> do_Expression;
+
 -- do_Expression_body: DoPart --
 do (if E.symbol
     // lox.Assignment then

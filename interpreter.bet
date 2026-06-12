@@ -8,56 +8,52 @@ INCLUDE '~beta/containers/dictionary';
 Interpreter: AstInterface
   (# loxcfl: @lox;
      gram: @grammar;
-     loxValueKinds: @
-       (# number: (#  exit 1 #);
-          string: (#  exit 2 #);
-          boolean: (#  exit 3 #);
-       #);
      LoxValue:
-       (# kind:<
-            (# value: @integer
-            do INNER
-            exit value
-            #);
-          dump:<
+       (# dump:<
             (# output: ^Stream;
             enter output[]
             do INNER
             #);
+          isNumber:< booleanValue;
           asNumber:<
             (# value: @real
             do INNER
             exit value
             #);
+          isBoolean:< booleanValue;  
           asBoolean:<
             (# value: @boolean;
             do INNER
             exit value
             #);
+          isString:< booleanValue;
+          asString:<
+            (# value: ^Text;
+            do INNER
+            exit value[]
+            #);  
        #);
      LoxNumber: LoxValue
        (# value: @real;
-          kind::
-            (# 
-            do loxValueKinds.number->value
-            #);
           dump::
             (# 
             do value->output.putReal;
             #);
+          isNumber:: trueValue;
           asNumber::
             (# 
             do THIS(LoxNumber).value->value
+            #);
+          asString::
+            (#
+            do &Text[] -> value[];
+               THIS(LoxNumber).value -> value.putReal;
             #);
        enter value
        exit value
        #);
      LoxBoolean: LoxValue
        (# value: @boolean;
-          kind::
-            (# 
-            do loxValueKinds.boolean->value
-            #);
           dump::
             (# 
             do (if value then
@@ -66,11 +62,32 @@ Interpreter: AstInterface
                    'false'->screen.putText;
                if)
             #);
+          isBoolean:: trueValue;
           asBoolean::
             (# 
             do THIS(LoxBoolean).value->value;
             #);
+          asString::
+            (#
+            do (if THIS(LoxBoolean).value then
+                   'true'->value[];
+                else
+                   'false'->value[];
+               if);
+            #); 
        #);
+     LoxString: LoxValue
+       (# value: ^Text;
+          isString:: trueValue;
+          asString::
+            (#
+            do THIS(LoxString).value[] -> value[];
+            #);
+          dump::
+            (#
+            do value[] -> output.putText;
+            #);  
+       #);  
      ValueDictionary: dictionary
        (# key:: Text;
           element:: LoxValue;
@@ -107,36 +124,21 @@ Interpreter: AstInterface
             (# expression: ^loxcfl.Expression;
                result: ^LoxValue;
                theVisitor: @loxcfl.treeLevelVisitor
-                 (# assertValue:
-                      (# value: ^LoxValue;
-                         node: ^AST;
-                      enter (value[], node[])
-                      do (if value[] = none then
-                             (node[], 'evaluated to nil')->error;
-                         if);
-                      #);
+                 (# 
                     assertNumber:
                       (# value: ^LoxValue;
                          node: ^AST;
                       enter (value[], node[])
-                      do (if value[] = none then
-                             (node[], 'evaluated to nil')->error;
-                          else
-                             (if value.kind <> loxValueKinds.number then
-                                 (node[], 'not a number')->error;
-                             if);
+                      do (if NOT value.isNumber then
+                             (node[], 'not a number')->error;
                          if);
                       #);
                     assertBoolean:
                       (# value: ^LoxValue;
                          node: ^AST;
                       enter (value[], node[])
-                      do (if value[] = none then
-                             (node[], 'evaluated to nil')->error;
-                          else
-                             (if value.kind <> loxValueKinds.boolean then
-                                 (node[], 'not a boolean')->error;
-                             if);
+                      do (if NOT value.isBoolean then
+                             (node[], 'not a boolean')->error;
                          if);
                       #);
                     assertNonZero:
@@ -249,6 +251,24 @@ Interpreter: AstInterface
                              true->result.value;
                          if);
                       #);
+                    NegateOperation: Operation
+                      (# Type:: LoxNumber;
+                         theExpression: ^loxcfl.Expression;
+                         value: ^LoxValue;
+                      enter theExpression[]
+                      do theExpression[] -> Evaluate -> value[];
+                         (value[], theExpression[]) -> assertNumber;
+                         -value.asNumber -> result.value;
+                      #);
+                    BoolNegateOperation: Operation
+                      (# Type:: LoxBoolean;
+                         theExpression: ^loxcfl.Expression;
+                         value: ^LoxValue;
+                      enter theExpression[]
+                      do theExpression[] -> Evaluate -> value[];
+                         (value[], theExpression[]) -> assertBoolean;
+                         NOT value.asBoolean -> result.value;
+                      #);  
                     visit_Assignment::
                       (# name: ^loxcfl.Name;
                          decl: ^NameDecl;
@@ -347,6 +367,21 @@ Interpreter: AstInterface
                       (# 
                       do (N.getLeftSide, N.getRightSide)->OrOperation->result[];
                       #);
+                    visit_Negation::
+                      (#
+                      do N.getEvaluation -> NegateOperation -> result[];
+                      #);
+                    visit_BoolNegation::
+                      (#
+                      do N.getEvaluation -> BoolNegateOperation -> result[];
+                      #);
+                    visit_Text::
+                      (# str: ^String;
+                         theLoxString: @LoxString;
+                      do N.getString -> str[];
+                         str.getText -> theLoxString.value[];
+                         theLoxString[] -> result[];
+                      #);  
                  #);
             enter expression[]
             do theVisitor[]->expression.accept;

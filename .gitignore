@@ -4,4 +4,5 @@ nti_ms
 *.pdb
 *.bobs
 *.lst
+*.dump
 tables

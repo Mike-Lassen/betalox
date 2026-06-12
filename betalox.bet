@@ -37,8 +37,13 @@ Interpreter
                   screen.newline;
               if);
             #);
-            
+        else
+           'Parse-errors:' -> screen.putLine;
+           line.newline;
+           line.reset;
+           (line[], screen[]) -> loxcfl.parser.errorReport;
         if);
         restart loop;
      if)
   #)
+  

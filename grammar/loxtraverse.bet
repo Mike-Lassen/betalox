@@ -23,6 +23,21 @@ lox_traverse:
        enter S[]
        <<SLOT do_Statement_body: DoPart>>
        #);
+     do_VarDecl: (* cons *)
+       (# V: ^lox.VarDecl
+       enter V[]
+       <<SLOT do_VarDecl_body: DoPart>>
+       #);
+     do_IntializerOpt: (* optional *)
+       (# a: ^astinterface.ast;
+       enter a[]
+       <<SLOT do_IntializerOpt_body: DoPart>>
+       #);
+     do_Initializer: (* cons *)
+       (# I: ^lox.Initializer
+       enter I[]
+       <<SLOT do_Initializer_body: DoPart>>
+       #);
      do_ExprStmt: (* cons *)
        (# E: ^lox.ExprStmt
        enter E[]

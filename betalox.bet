@@ -19,7 +19,7 @@ Interpreter
               eval:
                 (# 
                 do root[]
-                     ->Interpret
+                     ->InterpretExpression
                        (# error:: 
                             (# 
                             do 'error at '->screen.putText;
@@ -43,6 +43,14 @@ Interpreter
               (line[], screen[])->loxcfl.parser.errorReport;
           if);
        #);
-  do evaluationLoop;
+    name: ^Text;
+  do (if noOfArguments > 1 then
+        2 -> arguments -> name[];
+     if);
+     (if name[] <> NONE then
+         name[] -> interpretFile;
+      else
+         evaluationLoop
+     if);
   #)
 

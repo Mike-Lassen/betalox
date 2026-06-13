@@ -14,6 +14,7 @@ Interpreter: AstInterface
             enter output[]
             do INNER
             #);
+          isNil:< booleanValue;  
           isNumber:< booleanValue;
           asNumber:<
             (# value: @real
@@ -87,6 +88,17 @@ Interpreter: AstInterface
             (#
             do value[] -> output.putText;
             #);  
+       #);
+     LoxNil: @LoxValue
+       (# isNil:: trueValue;
+          asString::
+            (#
+            do 'nil' -> value[];
+            #);
+          dump::
+            (#
+            do 'nil' -> output.putText;
+            #);  
        #);  
      ValueDictionary: dictionary
        (# key:: Text;
@@ -109,10 +121,31 @@ Interpreter: AstInterface
 
      globals: @ValueDictionary;
 
+     interpretFile:
+       (# name: ^Text;
+          group: ^FragmentGroup;
+       enter name[]
+       do (name[], screen[]) -> TOP.open -> group[];
+          (if group[] <> NONE then
+              'Executing group ' -> screen.putText;
+              group.textFileName -> screen.putLine;
+              group.scan
+                (# form: ^FragmentForm;
+                do 'Executing fragment ' -> screen.putText;
+                   current.name -> screen.putLine;
+                   current[] -> form[];
+                   (1, screen[], loxcfl[])->form.root.dump;
+                   screen.newline;
+                   screen.newline;
+                   form.root[] -> InterpretProgram;
+                #);
+           else
+              'Unable to open ' -> screen.putText;
+              name[] -> screen.putLine;   
+          if);
+       #);
      Interpret:
-       (# expression: ^loxcfl.Expression;
-          result: ^LoxValue;
-          error:<
+       (# error:<
             (# node: ^AST;
                message: ^Text;
             enter (node[], message[])
@@ -120,10 +153,44 @@ Interpreter: AstInterface
                message[]->screen.putLine;
                stop;
             #);
+          ExecuteStatement:
+            (# statement: ^loxcfl.Statement;
+               visitor: @loxcfl.treeLevelVisitor
+                 (# visit_ExprStmt::
+                      (# result: ^LoxValue;
+                      do N.getExpression -> Evaluate -> result[];
+                      #);
+                    visit_PrintStmt::
+                      (# result: ^LoxValue;
+                      do N.getExpression -> Evaluate -> result[];
+                         result.asString -> screen.putLine;
+                      #);
+                    visit_VarDecl::
+                      (# name: ^loxcfl.Name;
+                         decl: ^NameDecl;
+                         initializer: ^AST;
+                         initialValue: ^LoxValue;
+                         evaluator: @loxcfl.treeLevelVisitor
+                           (# visit_Initializer::
+                                (#
+                                do N.getExpression -> Evaluate -> initialValue[]
+                                #);
+                           #);
+                      do N.getName -> name[];
+                         name.getNameDecl -> decl[];
+                         LoxNil[] -> initialValue[];
+                         N.getIntializerOpt -> initializer[];
+                         evaluator[] -> initializer.accept;
+                         (decl.getText, initialValue[]) -> globals.associate;
+                      #);
+                 #);
+            enter statement[]
+            do visitor[]->statement.accept;
+            #);
           Evaluate:
             (# expression: ^loxcfl.Expression;
                result: ^LoxValue;
-               theVisitor: @loxcfl.treeLevelVisitor
+               visitor: @loxcfl.treeLevelVisitor
                  (# 
                     assertNumber:
                       (# value: ^LoxValue;
@@ -270,12 +337,12 @@ Interpreter: AstInterface
                          NOT value.asBoolean -> result.value;
                       #);  
                     visit_Assignment::
-                      (# name: ^loxcfl.Name;
-                         decl: ^NameDecl;
-                      do N.getName -> name[];
-                         name.getNameDecl -> decl[];
+                      (# name: ^loxcfl.Variable;
+                         appl: ^NameAppl;
+                      do N.getVariable -> name[];
+                         name.getNameAppl -> appl[];
                          N.getExpression -> Evaluate -> result[];
-                         (decl.getText, result[]) -> globals.associate;
+                         (appl.getText, result[]) -> globals.associate;
                       #);
                     visit_Variable::
                       (# appl: ^NameAppl;
@@ -381,16 +448,33 @@ Interpreter: AstInterface
                       do N.getString -> str[];
                          str.getText -> theLoxString.value[];
                          theLoxString[] -> result[];
+                      #);
+                    visit_NilExp::
+                      (#
+                      do LoxNil[] -> result[];
                       #);  
                  #);
             enter expression[]
-            do theVisitor[]->expression.accept;
+            do visitor[]->expression.accept;
             exit result[]
             #);
+       do INNER;
+       #);
+     InterpretExpression: Interpret
+       (# expression: ^loxcfl.Expression;
+          result: ^LoxValue;
        enter expression[]
        do expression[]->Evaluate->result[];
-       exit result[]
+       exit result[] 
        #);
+     InterpretProgram: Interpret
+       (# program: ^loxcfl.Program;
+       enter program[]
+       do program.newScan
+            (#
+            do current[] -> ExecuteStatement;
+            #);
+       #);  
   do 'grammar/lox-parser'->loxcfl.init;
      globals.init;
      INNER;

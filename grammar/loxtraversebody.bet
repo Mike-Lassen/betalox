@@ -13,11 +13,25 @@ do P.newscan
 
 -- do_Statement_body: DoPart --
 do (if S.symbol
+    // lox.VarDecl then
+       S[] -> do_VarDecl;
     // lox.ExprStmt then
        S[] -> do_ExprStmt;
     // lox.PrintStmt then
        S[] -> do_PrintStmt;
     if);
+
+-- do_VarDecl_body: DoPart --
+do V.getName -> do_Name;
+   V.getIntializerOpt -> do_IntializerOpt;
+
+-- do_IntializerOpt_body: DoPart --
+do (if a.kind<>ast.kinds.optional then
+       a[] -> do_Initializer;
+   if);
+
+-- do_Initializer_body: DoPart --
+do I.getExpression -> do_Expression;
 
 -- do_ExprStmt_body: DoPart --
 do E.getExpression -> do_Expression;
@@ -92,7 +106,7 @@ do (if E.symbol
     if);
 
 -- do_Assignment_body: DoPart --
-do A.getName -> do_Name;
+do A.getVariable -> do_Variable;
    A.getExpression -> do_Expression;
 
 -- do_Name_body: DoPart --

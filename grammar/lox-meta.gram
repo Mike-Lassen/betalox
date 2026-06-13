@@ -12,7 +12,13 @@ Rule
 
 <Program> ::+ <Statement> ;
 
-<Statement> ::| <ExprStmt> | <PrintStmt> ;
+<Statement> ::| <VarDecl> | <ExprStmt> | <PrintStmt> ;
+
+<VarDecl> ::= 'var' <Name> <IntializerOpt> ';' ;
+
+<IntializerOpt> ::? <Initializer> ;
+
+<Initializer> ::= '=' <Expression> ;
 
 <ExprStmt> ::= <Expression> ';' ;
 
@@ -21,7 +27,7 @@ Rule
 
 <Expression> ::| <Assignment> | <Evaluation> ;
 
-<Assignment> ::= <Name> '=' <Expression> ;
+<Assignment> ::= <Variable> '=' <Expression> ;
 
 <Name> ::= <NameDecl> ;
 

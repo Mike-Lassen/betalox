@@ -12,13 +12,13 @@ Rule
 
 <Program> ::= <Statements> ;
 
-<Statements> ::+ <Statement> ;
+<Statements> ::* <Statement> ;
 
-<Statement> ::| <VarDecl> | <ExprStmt> | <PrintStmt> | <Block>;
+<Statement> ::| <VarDecl> | <ExprStmt> | <PrintStmt> | <Block> | <IfStmt> ;
 
-<VarDecl> ::= 'var' <Name> <IntializerOpt> ';' ;
+<VarDecl> ::= 'var' <Name> <InitializerOpt> ';' ;
 
-<IntializerOpt> ::? <Initializer> ;
+<InitializerOpt> ::? <Initializer> ;
 
 <Initializer> ::= '=' <Expression> ;
 
@@ -27,6 +27,12 @@ Rule
 <PrintStmt> ::= 'print' <Expression> ';' ;
 
 <Block> ::= '{' <Statements> '}' ;
+
+<IfStmt> ::= 'if' '(' <Condition:Expression> ')' <Statement> <ElsePartOpt> ;
+
+<ElsePartOpt> ::? <ElsePart> ;
+
+<ElsePart> ::= 'else' <Statement> ;
 
 <Expression> ::| <Assignment> | <Evaluation> ;
 

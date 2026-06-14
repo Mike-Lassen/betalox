@@ -14,14 +14,14 @@ Interpreter: AstInterface
             enter output[]
             do INNER
             #);
-          isNil:< booleanValue;  
+          isNil:< booleanValue;
           isNumber:< booleanValue;
           asNumber:<
             (# value: @real
             do INNER
             exit value
             #);
-          isBoolean:< booleanValue;  
+          isBoolean:< booleanValue;
           asBoolean:<
             (# value: @boolean;
             do INNER
@@ -32,30 +32,30 @@ Interpreter: AstInterface
             (# value: ^Text;
             do INNER
             exit value[]
-            #);  
+            #);
        #);
      LoxNumber: LoxValue
        (# value: @real;
-          dump::
+          dump:: 
             (# 
             do value->output.putReal;
             #);
           isNumber:: trueValue;
-          asNumber::
+          asNumber:: 
             (# 
             do THIS(LoxNumber).value->value
             #);
-          asString::
-            (#
-            do &Text[] -> value[];
-               THIS(LoxNumber).value -> value.putReal;
+          asString:: 
+            (# 
+            do &Text[]->value[];
+               THIS(LoxNumber).value->value.putReal;
             #);
        enter value
        exit value
        #);
      LoxBoolean: LoxValue
        (# value: @boolean;
-          dump::
+          dump:: 
             (# 
             do (if value then
                    'true'->screen.putText;
@@ -64,46 +64,46 @@ Interpreter: AstInterface
                if)
             #);
           isBoolean:: trueValue;
-          asBoolean::
+          asBoolean:: 
             (# 
             do THIS(LoxBoolean).value->value;
             #);
-          asString::
-            (#
+          asString:: 
+            (# 
             do (if THIS(LoxBoolean).value then
                    'true'->value[];
                 else
                    'false'->value[];
                if);
-            #); 
+            #);
        #);
      LoxString: LoxValue
        (# value: ^Text;
           isString:: trueValue;
-          asString::
-            (#
-            do THIS(LoxString).value[] -> value[];
+          asString:: 
+            (# 
+            do THIS(LoxString).value[]->value[];
             #);
-          dump::
-            (#
-            do value[] -> output.putText;
-            #);  
+          dump:: 
+            (# 
+            do value[]->output.putText;
+            #);
        #);
      LoxNil: @LoxValue
        (# isNil:: trueValue;
-          asString::
-            (#
-            do 'nil' -> value[];
+          asString:: 
+            (# 
+            do 'nil'->value[];
             #);
-          dump::
-            (#
-            do 'nil' -> output.putText;
-            #);  
-       #);  
+          dump:: 
+            (# 
+            do 'nil'->output.putText;
+            #);
+       #);
      ValueDictionary: dictionary
        (# key:: Text;
           element:: LoxValue;
-          hashFunction::
+          hashFunction:: 
             (# 
             do k.scanAll
                  (# 
@@ -113,17 +113,16 @@ Interpreter: AstInterface
                    - value->value;
                if);
             #);
-          keyEqual::
+          keyEqual:: 
             (# 
             do left[]->right.equal->value;
             #);
        #);
-
      Environment:
        (# values: @ValueDictionary;
           enclosing: ^Environment;
           init:
-            (#
+            (# 
             enter enclosing[]
             do values.init;
             #);
@@ -131,7 +130,7 @@ Interpreter: AstInterface
             (# name: ^Text;
                result: @boolean;
             enter name[]
-            do (name[] -> values.lookup) <> NONE -> result;
+            do (name[]->values.lookup) <> none->result;
             exit result
             #);
           define:
@@ -139,72 +138,70 @@ Interpreter: AstInterface
                value: ^LoxValue;
                ok: @boolean;
             enter (name[], value[])
-            do (if NOT (name[] -> isDefined) then
-                   (name[], value[]) -> values.associate;
-                   true -> ok;
+            do (if not (name[]->isDefined) then
+                   (name[], value[])->values.associate;
+                   true->ok;
                if);
-            exit ok   
+            exit ok
             #);
           get:
             (# name: ^Text;
                value: ^LoxValue;
             enter name[]
-            do name[] -> values.lookup -> value[];
-               (if (value[] = NONE) AND (enclosing[] <> NONE) then
-                   name[] -> enclosing.get -> value[];
+            do name[]->values.lookup->value[];
+               (if (value[] = none) and (enclosing[] <> none) then
+                   name[]->enclosing.get->value[];
                if)
-            exit value[]   
+            exit value[]
             #);
           assign:
             (# name: ^Text;
                value: ^LoxValue;
                ok: @boolean;
             enter (name[], value[])
-            do (if name[] -> isDefined then
-                  (name[], value[]) -> values.associate;
-                  true -> ok;
+            do (if name[]->isDefined then
+                   (name[], value[])->values.associate;
+                   true->ok;
                 else
-                  (if enclosing[] <> NONE then
-                      (name[], value[]) -> enclosing.assign -> ok;
-                  if);  
+                   (if enclosing[] <> none then
+                       (name[], value[])->enclosing.assign->ok;
+                   if);
                if);
             exit ok
             #);
        #);
-
      env: ^Environment;
      pushEnv:
        (# new: ^Environment
-       do &Environment[] -> new[];
-          env[] -> new.init;
-          new[] -> env[];
+       do &Environment[]->new[];
+          env[]->new.init;
+          new[]->env[];
        #);
      popEnv:
-       (#
-       do env.enclosing[] -> env[];
+       (# 
+       do env.enclosing[]->env[];
        #);
-
      interpretFile:
        (# name: ^Text;
           group: ^FragmentGroup;
        enter name[]
-       do (name[], screen[]) -> TOP.open -> group[];
-          (if group[] <> NONE then
-              'Executing group ' -> screen.putText;
-              group.textFileName -> screen.putLine;
+       do (name[], screen[])->TOP.open->group[];
+          (if group[] <> none then
+              'Executing group '->screen.putText;
+              group.textFileName->screen.putLine;
               group.scan
                 (# form: ^FragmentForm;
-                do 'Executing fragment ' -> screen.putText;
-                   current.name -> screen.putLine;
-                   current[] -> form[];
+                do 'Executing fragment '->screen.putText;
+                   current.name->screen.putLine;
+                   current[]->form[];
                    (1, screen[], loxcfl[])->form.root.dump;
                    screen.newline;
                    screen.newline;
-                   form.root[] -> InterpretProgram;
+                   form.root[]->InterpretProgram;
                 #);
            else
-              'Unable to open ' -> screen.putText;
-              name[] -> screen.putLine;   
+              'Unable to open '->screen.putText;
+              name[]->screen.putLine;
           if);
        #);
      Interpret:
@@ -216,53 +213,92 @@ Interpreter: AstInterface
                message[]->screen.putLine;
                stop;
             #);
+          assertNumber:
+            (# value: ^LoxValue;
+               node: ^AST;
+            enter (value[], node[])
+            do (if not value.isNumber then
+                   (node[], 'not a number')->error;
+               if);
+            #);
+          assertBoolean:
+            (# value: ^LoxValue;
+               node: ^AST;
+            enter (value[], node[])
+            do (if not value.isBoolean then
+                   (node[], 'not a boolean')->error;
+               if);
+            #);
+          assertNonZero:
+            (# value: @integer;
+               node: ^AST;
+            enter (value, node[])
+            do (if value = 0 then
+                   (node[], 'evaluated to zero')->error;
+               if);
+            #);
           ExecuteStatements:
             (# statements: ^loxcfl.Statements;
             enter statements[]
             do statements.newScan
-                 (#
-                 do current[] -> ExecuteStatement;
+                 (# 
+                 do current[]->ExecuteStatement;
                  #);
-            #);  
+            #);
           ExecuteStatement:
             (# statement: ^loxcfl.Statement;
                visitor: @loxcfl.treeLevelVisitor
-                 (# visit_ExprStmt::
+                 (# visit_ExprStmt:: 
                       (# result: ^LoxValue;
-                      do N.getExpression -> Evaluate -> result[];
+                      do N.getExpression->Evaluate->result[];
                       #);
-                    visit_PrintStmt::
+                    visit_PrintStmt:: 
                       (# result: ^LoxValue;
-                      do N.getExpression -> Evaluate -> result[];
-                         result.asString -> screen.putLine;
+                      do N.getExpression->Evaluate->result[];
+                         result.asString->screen.putLine;
                       #);
-                    visit_VarDecl::
+                    visit_VarDecl:: 
                       (# name: ^loxcfl.Name;
                          decl: ^NameDecl;
                          initializer: ^AST;
                          initialValue: ^LoxValue;
                          evaluator: @loxcfl.treeLevelVisitor
-                           (# visit_Initializer::
-                                (#
-                                do N.getExpression -> Evaluate -> initialValue[]
+                           (# visit_Initializer:: 
+                                (# 
+                                do N.getExpression->Evaluate->initialValue[]
                                 #);
                            #);
-
-                      do N.getName -> name[];
-                         name.getNameDecl -> decl[];
-                         LoxNil[] -> initialValue[];
-                         N.getIntializerOpt -> initializer[];
-                         evaluator[] -> initializer.accept;
-                         (if NOT ((decl.getText, initialValue[]) -> env.define) then
-                             (N[], 'variable already defined') -> error;
+                      do N.getName->name[];
+                         name.getNameDecl->decl[];
+                         LoxNil[]->initialValue[];
+                         N.getInitializerOpt->initializer[];
+                         evaluator[]->initializer.accept;
+                         (if not ((decl.getText, initialValue[])->env.define) then
+                             (N[], 'variable already defined')->error;
                          if);
                       #);
-                    visit_Block::
+                    visit_Block:: 
                       (# 
                       do pushEnv;
-                         N.getStatements -> ExecuteStatements;
+                         N.getStatements->ExecuteStatements;
                          popEnv;
-                      #);  
+                      #);
+                    visit_IfStmt:: 
+                      (# condition: ^LoxValue;
+                         executor: @loxcfl.treeLevelVisitor
+                           (# visit_ElsePart:: 
+                                (# 
+                                do N.getStatement->ExecuteStatement;
+                                #);
+                           #);
+                      do N.getCondition->Evaluate->condition[];
+                         (condition[], N.getCondition)->assertBoolean;
+                         (if condition.asBoolean then
+                             N.getStatement->ExecuteStatement;
+                          else
+                             executor[]->(N.getElsePartOpt).accept;
+                         if);
+                      #);
                  #);
             enter statement[]
             do visitor[]->statement.accept;
@@ -271,32 +307,7 @@ Interpreter: AstInterface
             (# expression: ^loxcfl.Expression;
                result: ^LoxValue;
                visitor: @loxcfl.treeLevelVisitor
-                 (# 
-                    assertNumber:
-                      (# value: ^LoxValue;
-                         node: ^AST;
-                      enter (value[], node[])
-                      do (if NOT value.isNumber then
-                             (node[], 'not a number')->error;
-                         if);
-                      #);
-                    assertBoolean:
-                      (# value: ^LoxValue;
-                         node: ^AST;
-                      enter (value[], node[])
-                      do (if NOT value.isBoolean then
-                             (node[], 'not a boolean')->error;
-                         if);
-                      #);
-                    assertNonZero:
-                      (# value: @integer;
-                         node: ^AST;
-                      enter (value, node[])
-                      do (if value = 0 then
-                             (node[], 'evaluated to zero')->error;
-                         if);
-                      #);
-                    Operation:
+                 (# Operation:
                       (# Type:< LoxValue;
                          result: ^Type;
                       do &Type[]->result[];
@@ -403,38 +414,38 @@ Interpreter: AstInterface
                          theExpression: ^loxcfl.Expression;
                          value: ^LoxValue;
                       enter theExpression[]
-                      do theExpression[] -> Evaluate -> value[];
-                         (value[], theExpression[]) -> assertNumber;
-                         -value.asNumber -> result.value;
+                      do theExpression[]->Evaluate->value[];
+                         (value[], theExpression[])->assertNumber;
+                         - value.asNumber->result.value;
                       #);
                     BoolNegateOperation: Operation
                       (# Type:: LoxBoolean;
                          theExpression: ^loxcfl.Expression;
                          value: ^LoxValue;
                       enter theExpression[]
-                      do theExpression[] -> Evaluate -> value[];
-                         (value[], theExpression[]) -> assertBoolean;
-                         NOT value.asBoolean -> result.value;
-                      #);  
-                    visit_Assignment::
+                      do theExpression[]->Evaluate->value[];
+                         (value[], theExpression[])->assertBoolean;
+                         not value.asBoolean->result.value;
+                      #);
+                    visit_Assignment:: 
                       (# name: ^loxcfl.Variable;
                          appl: ^NameAppl;
-                      do N.getVariable -> name[];
-                         name.getNameAppl -> appl[];
-                         N.getExpression -> Evaluate -> result[];
-                         (if NOT ((appl.getText, result[]) -> env.assign) then
-                             (N[], 'variable does not exist') -> error;
+                      do N.getVariable->name[];
+                         name.getNameAppl->appl[];
+                         N.getExpression->Evaluate->result[];
+                         (if not ((appl.getText, result[])->env.assign) then
+                             (N[], 'variable does not exist')->error;
                          if);
                       #);
-                    visit_Variable::
+                    visit_Variable:: 
                       (# appl: ^NameAppl;
-                      do N.getNameAppl -> appl[];
-                         appl.getText -> env.get -> result[];
-                         (if result[] = NONE then
-                             (N[], 'variable does not exist') -> error;
+                      do N.getNameAppl->appl[];
+                         appl.getText->env.get->result[];
+                         (if result[] = none then
+                             (N[], 'variable does not exist')->error;
                          if);
                       #);
-                    visit_Number::
+                    visit_Number:: 
                       (# input: ^Text;
                          theNumber: @LoxNumber;
                          theConst: ^Const;
@@ -442,102 +453,102 @@ Interpreter: AstInterface
                          theConst.getText->input[];
                          input.reset;
                          input.getNumber
-                           (# integerValue::
+                           (# integerValue:: 
                                 (# 
                                 do value->theNumber.value;
                                 #);
-                              basedValue::
+                              basedValue:: 
                                 (# 
                                 do value->theNumber.value;
                                 #);
-                              realValue::
+                              realValue:: 
                                 (# 
                                 do value->theNumber.value;
                                 #);
                            #);
                          theNumber[]->result[];
                       #);
-                    visit_TrueExp::
+                    visit_TrueExp:: 
                       (# theBoolean: @LoxBoolean;
                       do true->theBoolean.value;
                          theBoolean[]->result[];
                       #);
-                    visit_FalseExp::
+                    visit_FalseExp:: 
                       (# theBoolean: @LoxBoolean;
                       do false->theBoolean.value;
                          theBoolean[]->result[];
                       #);
-                    visit_Addition::
+                    visit_Addition:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->Add->result[];
                       #);
-                    visit_Subtraction::
+                    visit_Subtraction:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->Subtract->result[];
                       #);
-                    visit_Multiplication::
+                    visit_Multiplication:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->Multiply->result[];
                       #);
-                    visit_Division::
+                    visit_Division:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->Divide->result[];
                       #);
-                    visit_Grouping::
+                    visit_Grouping:: 
                       (# 
                       do N.getEvaluation->evaluate->result[];
                       #);
-                    visit_Equals::
+                    visit_Equals:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->Equal->result[];
                       #);
-                    visit_NotEquals::
+                    visit_NotEquals:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->NotEqual->result[];
                       #);
-                    visit_Less::
+                    visit_Less:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->Less->result[];
                       #);
-                    visit_LessEqual::
+                    visit_LessEqual:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->LessEqual->result[];
                       #);
-                    visit_Greater::
+                    visit_Greater:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->Greater->result[];
                       #);
-                    visit_GreaterEqual::
+                    visit_GreaterEqual:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->GreaterEqual->result[];
                       #);
-                    visit_LogicAnd::
+                    visit_LogicAnd:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->AndOperation->result[];
                       #);
-                    visit_LogicOr::
+                    visit_LogicOr:: 
                       (# 
                       do (N.getLeftSide, N.getRightSide)->OrOperation->result[];
                       #);
-                    visit_Negation::
-                      (#
-                      do N.getEvaluation -> NegateOperation -> result[];
+                    visit_Negation:: 
+                      (# 
+                      do N.getEvaluation->NegateOperation->result[];
                       #);
-                    visit_BoolNegation::
-                      (#
-                      do N.getEvaluation -> BoolNegateOperation -> result[];
+                    visit_BoolNegation:: 
+                      (# 
+                      do N.getEvaluation->BoolNegateOperation->result[];
                       #);
-                    visit_Text::
+                    visit_Text:: 
                       (# str: ^String;
                          theLoxString: @LoxString;
-                      do N.getString -> str[];
-                         str.getText -> theLoxString.value[];
-                         theLoxString[] -> result[];
+                      do N.getString->str[];
+                         str.getText->theLoxString.value[];
+                         theLoxString[]->result[];
                       #);
-                    visit_NilExp::
-                      (#
-                      do LoxNil[] -> result[];
-                      #);  
+                    visit_NilExp:: 
+                      (# 
+                      do LoxNil[]->result[];
+                      #);
                  #);
             enter expression[]
             do visitor[]->expression.accept;
@@ -550,15 +561,15 @@ Interpreter: AstInterface
           result: ^LoxValue;
        enter expression[]
        do expression[]->Evaluate->result[];
-       exit result[] 
+       exit result[]
        #);
      InterpretProgram: Interpret
        (# program: ^loxcfl.Program;
        enter program[]
-       do program.getStatements -> ExecuteStatements;
-       #);  
+       do program.getStatements->ExecuteStatements;
+       #);
   do 'grammar/lox-parser'->loxcfl.init;
-     &Environment[] -> env[];
+     &Environment[]->env[];
      env.init;
      INNER;
   #);

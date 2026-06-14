@@ -24,13 +24,15 @@ do (if S.symbol
        S[] -> do_PrintStmt;
     // lox.Block then
        S[] -> do_Block;
+    // lox.IfStmt then
+       S[] -> do_IfStmt;
     if);
 
 -- do_VarDecl_body: DoPart --
 do V.getName -> do_Name;
-   V.getIntializerOpt -> do_IntializerOpt;
+   V.getInitializerOpt -> do_InitializerOpt;
 
--- do_IntializerOpt_body: DoPart --
+-- do_InitializerOpt_body: DoPart --
 do (if a.kind<>ast.kinds.optional then
        a[] -> do_Initializer;
    if);
@@ -46,6 +48,19 @@ do P.getExpression -> do_Expression;
 
 -- do_Block_body: DoPart --
 do B.getStatements -> do_Statements;
+
+-- do_IfStmt_body: DoPart --
+do I.getCondition -> do_Expression;
+   I.getStatement -> do_Statement;
+   I.getElsePartOpt -> do_ElsePartOpt;
+
+-- do_ElsePartOpt_body: DoPart --
+do (if a.kind<>ast.kinds.optional then
+       a[] -> do_ElsePart;
+   if);
+
+-- do_ElsePart_body: DoPart --
+do E.getStatement -> do_Statement;
 
 -- do_Expression_body: DoPart --
 do (if E.symbol

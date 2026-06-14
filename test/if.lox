@@ -1,0 +1,15 @@
+-- program : Program : lox --
+
+var age1 = 50;
+var age2 = 75;
+var pension = 70;
+
+if (age1 < pension)
+  print "Hello, World";
+
+if (age2 < pension)
+  print "Then Branch";
+else
+  print "Else Branch";
+
+

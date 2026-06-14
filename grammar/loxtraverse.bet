@@ -33,10 +33,10 @@ lox_traverse:
        enter V[]
        <<SLOT do_VarDecl_body: DoPart>>
        #);
-     do_IntializerOpt: (* optional *)
+     do_InitializerOpt: (* optional *)
        (# a: ^astinterface.ast;
        enter a[]
-       <<SLOT do_IntializerOpt_body: DoPart>>
+       <<SLOT do_InitializerOpt_body: DoPart>>
        #);
      do_Initializer: (* cons *)
        (# I: ^lox.Initializer
@@ -57,6 +57,21 @@ lox_traverse:
        (# B: ^lox.Block
        enter B[]
        <<SLOT do_Block_body: DoPart>>
+       #);
+     do_IfStmt: (* cons *)
+       (# I: ^lox.IfStmt
+       enter I[]
+       <<SLOT do_IfStmt_body: DoPart>>
+       #);
+     do_ElsePartOpt: (* optional *)
+       (# a: ^astinterface.ast;
+       enter a[]
+       <<SLOT do_ElsePartOpt_body: DoPart>>
+       #);
+     do_ElsePart: (* cons *)
+       (# E: ^lox.ElsePart
+       enter E[]
+       <<SLOT do_ElsePart_body: DoPart>>
        #);
      do_Expression: (* alternation *)
        (# E: ^lox.Expression

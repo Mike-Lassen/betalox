@@ -119,7 +119,51 @@ Interpreter: AstInterface
             #);
        #);
 
-     globals: @ValueDictionary;
+     Environment:
+       (# values: @ValueDictionary;
+          init:
+            (#
+            do values.init;
+            #);
+          isDefined:
+            (# name: ^Text;
+               result: @boolean;
+            enter name[]
+            do (name[] -> values.lookup) <> NONE -> result;
+            exit result
+            #);
+          define:
+            (# name: ^Text;
+               value: ^LoxValue;
+               ok: @boolean;
+            enter (name[], value[])
+            do (if NOT (name[] -> isDefined) then
+                   (name[], value[]) -> values.associate;
+                   true -> ok;
+               if);
+            exit ok   
+            #);
+          get:
+            (# name: ^Text;
+               value: ^LoxValue;
+            enter name[]
+            do name[] -> values.lookup -> value[];
+            exit value[]   
+            #);
+          assign:
+            (# name: ^Text;
+               value: ^LoxValue;
+               ok: @boolean;
+            enter (name[], value[])
+            do (if name[] -> isDefined then
+                  (name[], value[]) -> values.associate;
+                  true -> ok;
+               if);
+            exit ok   
+            #);
+       #);
+
+     env: ^Environment;
 
      interpretFile:
        (# name: ^Text;
@@ -176,12 +220,15 @@ Interpreter: AstInterface
                                 do N.getExpression -> Evaluate -> initialValue[]
                                 #);
                            #);
+
                       do N.getName -> name[];
                          name.getNameDecl -> decl[];
                          LoxNil[] -> initialValue[];
                          N.getIntializerOpt -> initializer[];
                          evaluator[] -> initializer.accept;
-                         (decl.getText, initialValue[]) -> globals.associate;
+                         (if NOT ((decl.getText, initialValue[]) -> env.define) then
+                             (N[], 'variable already defined') -> error;
+                         if);
                       #);
                  #);
             enter statement[]
@@ -342,12 +389,17 @@ Interpreter: AstInterface
                       do N.getVariable -> name[];
                          name.getNameAppl -> appl[];
                          N.getExpression -> Evaluate -> result[];
-                         (appl.getText, result[]) -> globals.associate;
+                         (if NOT ((appl.getText, result[]) -> env.assign) then
+                             (N[], 'variable does not exist') -> error;
+                         if);
                       #);
                     visit_Variable::
                       (# appl: ^NameAppl;
                       do N.getNameAppl -> appl[];
-                         appl.getText -> globals.lookup -> result[];
+                         appl.getText -> env.get -> result[];
+                         (if result[] = NONE then
+                             (N[], 'variable does not exist') -> error;
+                         if);
                       #);
                     visit_Number::
                       (# input: ^Text;
@@ -476,7 +528,8 @@ Interpreter: AstInterface
             #);
        #);  
   do 'grammar/lox-parser'->loxcfl.init;
-     globals.init;
+     &Environment[] -> env[];
+     env.init;
      INNER;
   #);
 

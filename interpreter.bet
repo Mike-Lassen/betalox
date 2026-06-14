@@ -121,8 +121,10 @@ Interpreter: AstInterface
 
      Environment:
        (# values: @ValueDictionary;
+          enclosing: ^Environment;
           init:
             (#
+            enter enclosing[]
             do values.init;
             #);
           isDefined:
@@ -148,6 +150,9 @@ Interpreter: AstInterface
                value: ^LoxValue;
             enter name[]
             do name[] -> values.lookup -> value[];
+               (if (value[] = NONE) AND (enclosing[] <> NONE) then
+                   name[] -> enclosing.get -> value[];
+               if)
             exit value[]   
             #);
           assign:
@@ -158,12 +163,26 @@ Interpreter: AstInterface
             do (if name[] -> isDefined then
                   (name[], value[]) -> values.associate;
                   true -> ok;
+                else
+                  (if enclosing[] <> NONE then
+                      (name[], value[]) -> enclosing.assign -> ok;
+                  if);  
                if);
-            exit ok   
+            exit ok
             #);
        #);
 
      env: ^Environment;
+     pushEnv:
+       (# new: ^Environment
+       do &Environment[] -> new[];
+          env[] -> new.init;
+          new[] -> env[];
+       #);
+     popEnv:
+       (#
+       do env.enclosing[] -> env[];
+       #);
 
      interpretFile:
        (# name: ^Text;
@@ -197,6 +216,14 @@ Interpreter: AstInterface
                message[]->screen.putLine;
                stop;
             #);
+          ExecuteStatements:
+            (# statements: ^loxcfl.Statements;
+            enter statements[]
+            do statements.newScan
+                 (#
+                 do current[] -> ExecuteStatement;
+                 #);
+            #);  
           ExecuteStatement:
             (# statement: ^loxcfl.Statement;
                visitor: @loxcfl.treeLevelVisitor
@@ -230,6 +257,12 @@ Interpreter: AstInterface
                              (N[], 'variable already defined') -> error;
                          if);
                       #);
+                    visit_Block::
+                      (# 
+                      do pushEnv;
+                         N.getStatements -> ExecuteStatements;
+                         popEnv;
+                      #);  
                  #);
             enter statement[]
             do visitor[]->statement.accept;
@@ -522,10 +555,7 @@ Interpreter: AstInterface
      InterpretProgram: Interpret
        (# program: ^loxcfl.Program;
        enter program[]
-       do program.newScan
-            (#
-            do current[] -> ExecuteStatement;
-            #);
+       do program.getStatements -> ExecuteStatements;
        #);  
   do 'grammar/lox-parser'->loxcfl.init;
      &Environment[] -> env[];

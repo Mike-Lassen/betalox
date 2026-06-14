@@ -10,9 +10,11 @@ Option
 
 Rule
 
-<Program> ::+ <Statement> ;
+<Program> ::= <Statements> ;
 
-<Statement> ::| <VarDecl> | <ExprStmt> | <PrintStmt> ;
+<Statements> ::+ <Statement> ;
+
+<Statement> ::| <VarDecl> | <ExprStmt> | <PrintStmt> | <Block>;
 
 <VarDecl> ::= 'var' <Name> <IntializerOpt> ';' ;
 
@@ -24,6 +26,7 @@ Rule
 
 <PrintStmt> ::= 'print' <Expression> ';' ;
 
+<Block> ::= '{' <Statements> '}' ;
 
 <Expression> ::| <Assignment> | <Evaluation> ;
 

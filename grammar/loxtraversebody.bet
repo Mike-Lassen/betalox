@@ -6,7 +6,10 @@ GrammarPath: (# exit 'C:/beta/betalox/grammar/lox' #);
 BobsTab:     (# exit 'C:/beta/betalox/grammar/lox-parser.btab' #);
 
 -- do_Program_body: DoPart --
-do P.newscan
+do P.getStatements -> do_Statements;
+
+-- do_Statements_body: DoPart --
+do S.newscan
    (#
    do current[] -> do_Statement;
    #);
@@ -19,6 +22,8 @@ do (if S.symbol
        S[] -> do_ExprStmt;
     // lox.PrintStmt then
        S[] -> do_PrintStmt;
+    // lox.Block then
+       S[] -> do_Block;
     if);
 
 -- do_VarDecl_body: DoPart --
@@ -38,6 +43,9 @@ do E.getExpression -> do_Expression;
 
 -- do_PrintStmt_body: DoPart --
 do P.getExpression -> do_Expression;
+
+-- do_Block_body: DoPart --
+do B.getStatements -> do_Statements;
 
 -- do_Expression_body: DoPart --
 do (if E.symbol

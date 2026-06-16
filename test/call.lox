@@ -1,0 +1,21 @@
+-- program : Program : lox --
+
+fun add(a, b) {
+    print a + b;
+    newline;
+}
+
+fun sayHi(first, last) {
+  print "Hi, ";
+  print first;
+  print " ";
+  print last;
+  print "!";
+  newline;
+}
+
+print clock();
+newline;
+add(2, 3);
+sayHi("Dear", "Reader");
+print clock();

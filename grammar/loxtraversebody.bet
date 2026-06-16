@@ -16,8 +16,12 @@ do S.newscan
 
 -- do_Statement_body: DoPart --
 do (if S.symbol
+       (* sub-alternation <Declaration>: *)
     // lox.VarDecl then
        S[] -> do_VarDecl;
+    // lox.FunDecl then
+       S[] -> do_FunDecl;
+       (* End sub-alternation <Declaration> *)
     // lox.ExprStmt then
        S[] -> do_ExprStmt;
     // lox.PrintStmt then
@@ -32,9 +36,31 @@ do (if S.symbol
        S[] -> do_WhileStmt;
     if);
 
+-- do_Declaration_body: DoPart --
+do (if D.symbol
+    // lox.VarDecl then
+       D[] -> do_VarDecl;
+    // lox.FunDecl then
+       D[] -> do_FunDecl;
+    if);
+
 -- do_VarDecl_body: DoPart --
 do V.getName -> do_Name;
    V.getInitializerOpt -> do_InitializerOpt;
+
+-- do_FunDecl_body: DoPart --
+do F.getFunction -> do_Function;
+
+-- do_Function_body: DoPart --
+do F.getName -> do_Name;
+   F.getParameters -> do_Parameters;
+   F.getBlock -> do_Block;
+
+-- do_Parameters_body: DoPart --
+do P.newscan
+   (#
+   do current[] -> do_Name;
+   #);
 
 -- do_InitializerOpt_body: DoPart --
 do (if a.kind<>ast.kinds.optional then
@@ -112,6 +138,8 @@ do (if E.symbol
        E[] -> do_Negation;
     // lox.BoolNegation then
        E[] -> do_BoolNegation;
+    // lox.Call then
+       E[] -> do_Call;
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        E[] -> do_Variable;
@@ -182,6 +210,8 @@ do (if E.symbol
        E[] -> do_Negation;
     // lox.BoolNegation then
        E[] -> do_BoolNegation;
+    // lox.Call then
+       E[] -> do_Call;
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        E[] -> do_Variable;
@@ -245,6 +275,8 @@ do (if E.symbol
        E[] -> do_Negation;
     // lox.BoolNegation then
        E[] -> do_BoolNegation;
+    // lox.Call then
+       E[] -> do_Call;
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        E[] -> do_Variable;
@@ -304,6 +336,8 @@ do (if E.symbol
        E[] -> do_Negation;
     // lox.BoolNegation then
        E[] -> do_BoolNegation;
+    // lox.Call then
+       E[] -> do_Call;
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        E[] -> do_Variable;
@@ -361,6 +395,8 @@ do (if C.symbol
        C[] -> do_Negation;
     // lox.BoolNegation then
        C[] -> do_BoolNegation;
+    // lox.Call then
+       C[] -> do_Call;
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        C[] -> do_Variable;
@@ -416,6 +452,8 @@ do (if T.symbol
        T[] -> do_Negation;
     // lox.BoolNegation then
        T[] -> do_BoolNegation;
+    // lox.Call then
+       T[] -> do_Call;
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        T[] -> do_Variable;
@@ -457,6 +495,8 @@ do (if F.symbol
        F[] -> do_Negation;
     // lox.BoolNegation then
        F[] -> do_BoolNegation;
+    // lox.Call then
+       F[] -> do_Call;
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        F[] -> do_Variable;
@@ -492,6 +532,8 @@ do (if U.symbol
        U[] -> do_Negation;
     // lox.BoolNegation then
        U[] -> do_BoolNegation;
+    // lox.Call then
+       U[] -> do_Call;
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        U[] -> do_Variable;
@@ -517,6 +559,16 @@ do N.getEvaluation -> do_Unary;
 
 -- do_BoolNegation_body: DoPart --
 do B.getEvaluation -> do_Unary;
+
+-- do_Call_body: DoPart --
+do C.getCallee -> do_Unary;
+   C.getArguments -> do_Arguments;
+
+-- do_Arguments_body: DoPart --
+do A.newscan
+   (#
+   do current[] -> do_Expression;
+   #);
 
 -- do_Primary_body: DoPart --
 do (if P.symbol

@@ -2,12 +2,18 @@ ORIGIN '~beta/newmps/astlevel';
 INCLUDE 'grammar/loxcfl';
 INCLUDE 'grammar/loxgram';
 INCLUDE '~beta/basiclib/numberio';
+INCLUDE '~beta/sysutils/time';
 INCLUDE '~beta/containers/dictionary';
+INCLUDE '~beta/containers/seqContainers';
+
 
 -- lib: attributes --
 Interpreter: AstInterface
   (# loxcfl: @lox;
      gram: @grammar;
+     ArgumentList: Deque
+       (# Element:: LoxValue;
+       #);
      LoxValue:
        (# dump:<
             (# output: ^Stream;
@@ -32,6 +38,12 @@ Interpreter: AstInterface
             (# value: ^Text;
             do INNER
             exit value[]
+            #);
+          isCallable:< booleanValue;
+          asCallable:<
+            (# callable: ^LoxCallable;
+            do INNER;
+            exit callable[]
             #);
           isTruthy:< booleanValue;
        #);
@@ -108,6 +120,50 @@ Interpreter: AstInterface
             do 'nil'->output.putText;
             #);
        #);
+     LoxCallable: LoxValue
+       (# isNil:: falseValue;
+          isTruthy:: trueValue;
+          isCallable:: trueValue;
+          asCallable:: (# do THIS(LoxCallable)[] -> callable[] #);
+          arity:< integerValue;
+          call:<
+            (# interpreter: ^Interpret;
+               arguments: ^ArgumentList;
+               result: ^LoxValue;
+            enter (interpreter[], arguments[])
+            do INNER
+            exit result[]
+            #);
+       #);
+     LoxFunction: LoxCallable
+       (# name: ^Text;
+          parameters: ^loxcfl.Parameters;
+          block: ^loxcfl.Block;
+          arity:: (# do parameters.noOfSons -> value #);
+          call::
+            (#
+            do pushEnv;
+               parameters.newScan
+                 (# decl: ^NameDecl;
+                 do current.getNameDecl -> decl[];
+                    (decl.getText, arguments.removeFront) -> env.define;
+                 #);
+               block[]->interpreter.ExecuteStatement;
+               popEnv;
+            #);
+       #);
+     NativeFunction: LoxCallable
+       (#
+       #);
+     Clock: NativeFunction
+       (# arity:: (# do 0 -> value #);
+          call::
+            (# number: @LoxNumber;
+            do cpuTime -> number.value;
+               number[] -> result[];
+            #);
+       #);
+       
      ValueDictionary: dictionary
        (# key:: Text;
           element:: LoxValue;
@@ -289,6 +345,20 @@ Interpreter: AstInterface
                              (N[], 'variable already defined')->error;
                          if);
                       #);
+                    visit_FunDecl::
+                      (# function: ^loxcfl.Function;
+                         name: ^loxcfl.Name;
+                         decl: ^NameDecl;
+                         theLoxFunction: ^LoxFunction;
+                      do N.getFunction -> function[];
+                         function.getName -> name[];
+                         name.getNameDecl -> decl[];
+                         &LoxFunction[] -> theLoxFunction[];
+                         decl.getText -> theLoxFunction.name[];
+                         function.getParameters -> theLoxFunction.parameters[];
+                         function.getBlock -> theLoxFunction.block[];
+                         (decl.getText, theLoxFunction[]) -> env.define;
+                      #);
                     visit_Block:: 
                       (# 
                       do pushEnv;
@@ -447,6 +517,26 @@ Interpreter: AstInterface
                       do theExpression[]->Evaluate->value[];
                          not value.isTruthy->result.value;
                       #);
+                    visit_Call::
+                      (# value: ^LoxValue;
+                         callable: ^LoxCallable;
+                         args: ^ArgumentList;
+                         arguments: ^loxcfl.Arguments;
+                      do N.getCallee->Evaluate->value[];
+                         (if value.isCallable then
+                             value.asCallable -> callable[];
+                             &ArgumentList[] -> args[];
+                             N.getArguments -> arguments[];
+                             arguments.newScan
+                               (#
+                               do current[]->Evaluate->args.insertBack;
+                               #);
+                             (if args.size <> callable.arity then
+                                 (N[], 'arity error') -> error;
+                             if);
+                             (THIS(Interpret)[], args[]) -> callable.call -> result[];
+                         if);
+                      #);
                     visit_Assignment:: 
                       (# name: ^loxcfl.Variable;
                          appl: ^NameAppl;
@@ -591,6 +681,7 @@ Interpreter: AstInterface
   do 'grammar/lox-parser'->loxcfl.init;
      &Environment[]->env[];
      env.init;
+     ('clock', &Clock[]) -> env.define;
      INNER;
   #);
 

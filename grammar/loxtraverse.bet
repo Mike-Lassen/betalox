@@ -28,10 +28,30 @@ lox_traverse:
        enter S[]
        <<SLOT do_Statement_body: DoPart>>
        #);
+     do_Declaration: (* alternation *)
+       (# D: ^lox.Declaration
+       enter D[]
+       <<SLOT do_Declaration_body: DoPart>>
+       #);
      do_VarDecl: (* cons *)
        (# V: ^lox.VarDecl
        enter V[]
        <<SLOT do_VarDecl_body: DoPart>>
+       #);
+     do_FunDecl: (* cons *)
+       (# F: ^lox.FunDecl
+       enter F[]
+       <<SLOT do_FunDecl_body: DoPart>>
+       #);
+     do_Function: (* cons *)
+       (# F: ^lox.Function
+       enter F[]
+       <<SLOT do_Function_body: DoPart>>
+       #);
+     do_Parameters: (* list *)
+       (# P: ^lox.Parameters
+       enter P[]
+       <<SLOT do_Parameters_body: DoPart>>
        #);
      do_InitializerOpt: (* optional *)
        (# a: ^astinterface.ast;
@@ -202,6 +222,16 @@ lox_traverse:
        (# B: ^lox.BoolNegation
        enter B[]
        <<SLOT do_BoolNegation_body: DoPart>>
+       #);
+     do_Call: (* cons *)
+       (# C: ^lox.Call
+       enter C[]
+       <<SLOT do_Call_body: DoPart>>
+       #);
+     do_Arguments: (* list *)
+       (# A: ^lox.Arguments
+       enter A[]
+       <<SLOT do_Arguments_body: DoPart>>
        #);
      do_Primary: (* alternation *)
        (# P: ^lox.Primary

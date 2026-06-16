@@ -2,7 +2,7 @@
 Grammar lox:
 
 Option
-  version=2
+  version=3
   comBegin='/*'
   comEnd='*/'
   stringChar='\"'
@@ -14,9 +14,17 @@ Rule
 
 <Statements> ::* <Statement> ;
 
-<Statement> ::| <VarDecl> | <ExprStmt> | <PrintStmt> | <NewlineStmt> | <Block> | <IfStmt> | <WhileStmt> ;
+<Statement> ::| <Declaration> | <ExprStmt> | <PrintStmt> | <NewlineStmt> | <Block> | <IfStmt> | <WhileStmt> ;
+
+<Declaration> ::| <VarDecl> | <FunDecl> ;
 
 <VarDecl> ::= 'var' <Name> <InitializerOpt> ';' ;
+
+<FunDecl> ::= 'fun' <Function> ;
+
+<Function> ::= <Name> '(' <Parameters> ')' <Block> ;
+
+<Parameters> ::* <Name> ',' ;
 
 <InitializerOpt> ::? <Initializer> ;
 
@@ -30,7 +38,7 @@ Rule
 
 <Block> ::= '{' <Statements> '}' ;
 
-<IfStmt> ::= 'if' '(' <Condition:Expression> ')' <Statement> <ElsePartOpt> ;
+<IfStmt> ::= 'if' '(' <Condition:Expression> ')' <Statement> <ElsePartOpt>;
 
 <WhileStmt> ::= 'while' '(' <Condition:Expression> ')' <Statement> ;
 
@@ -68,9 +76,13 @@ Rule
 <Multiplication> ::= <LeftSide:Factor> '*' <RightSide:Unary> ;
 <Division> ::= <LeftSide:Factor> '/' <RightSide:Unary> ;
 
-<Unary> ::| <Negation> | <BoolNegation> | <Primary> ;
+<Unary> ::| <Negation> | <BoolNegation> | <Call> | <Primary>;
 <Negation> ::= '-' <Evaluation:Unary> ;
 <BoolNegation> ::= '!' <Evaluation:Unary> ;
+
+<Call> ::= <Callee:Unary> '(' <Arguments> ')' ;
+
+<Arguments> ::* <Expression> ',' ;
 
 <Primary>       ::| <Variable>
                   | <Number>

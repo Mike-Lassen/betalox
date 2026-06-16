@@ -12,4 +12,8 @@ if (age2 < pension)
 else
   print "Else Branch";
 
+var name = "Mike";
 
+if (name) {
+  print name;
+}

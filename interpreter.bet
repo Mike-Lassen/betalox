@@ -33,6 +33,7 @@ Interpreter: AstInterface
             do INNER
             exit value[]
             #);
+          isTruthy:< booleanValue;
        #);
      LoxNumber: LoxValue
        (# value: @real;
@@ -50,6 +51,7 @@ Interpreter: AstInterface
             do &Text[]->value[];
                THIS(LoxNumber).value->value.putReal;
             #);
+          isTruthy:: trueValue;  
        enter value
        exit value
        #);
@@ -76,6 +78,10 @@ Interpreter: AstInterface
                    'false'->value[];
                if);
             #);
+          isTruthy::
+            (#
+            do THIS(LoxBoolean).value -> value;
+            #);  
        #);
      LoxString: LoxValue
        (# value: ^Text;
@@ -88,9 +94,11 @@ Interpreter: AstInterface
             (# 
             do value[]->output.putText;
             #);
+          isTruthy:: trueValue;  
        #);
      LoxNil: @LoxValue
        (# isNil:: trueValue;
+          isTruthy:: falseValue;
           asString:: 
             (# 
             do 'nil'->value[];
@@ -292,8 +300,7 @@ Interpreter: AstInterface
                                 #);
                            #);
                       do N.getCondition->Evaluate->condition[];
-                         (condition[], N.getCondition)->assertBoolean;
-                         (if condition.asBoolean then
+                         (if condition.isTruthy then
                              N.getStatement->ExecuteStatement;
                           else
                              executor[]->(N.getElsePartOpt).accept;
@@ -304,8 +311,7 @@ Interpreter: AstInterface
                       do loop:
                            (# condition: ^LoxValue;
                            do N.getCondition->Evaluate->condition[];
-                              (condition[], N.getCondition)->assertBoolean;
-                               (if condition.asBoolean then
+                               (if condition.isTruthy then
                                    N.getStatement->ExecuteStatement;
                                    restart loop;
                                if);    
@@ -395,31 +401,30 @@ Interpreter: AstInterface
                          right: ^LoxValue;
                       enter (leftSide[], rightSide[])
                       do leftSide[]->Evaluate->left[];
-                         (left[], leftSide[])->assertBoolean;
-                         (if left.asBoolean then
+                         (if left.isTruthy then
                              rightSide[]->Evaluate->right[];
-                             (right[], rightSide[])->assertBoolean;
-                             right.asBoolean->result.value;
+                             right.isTruthy->result.value;
                           else
                              false->result.value;
                          if);
                       #);
                     OrOperation: Operation
-                      (# Type:: LoxBoolean;
-                         leftSide: ^loxcfl.Expression;
+                      (# leftSide: ^loxcfl.Expression;
                          rightSide: ^loxcfl.Expression;
                          left: ^LoxValue;
                          right: ^LoxValue;
                       enter (leftSide[], rightSide[])
                       do leftSide[]->Evaluate->left[];
-                         (left[], leftSide[])->assertBoolean;
-                         (if not left.asBoolean then
-                             rightSide[]->Evaluate->right[];
-                             (right[], rightSide[])->assertBoolean;
-                             right.asBoolean->result.value;
-                          else
-                             true->result.value;
+                         (if left.isTruthy then
+                             left[] -> result[];
+                             leave OrOperation;
                          if);
+                         rightSide[]->Evaluate->right[];
+                         (if right.isTruthy then
+                             right[] -> result[];
+                             leave OrOperation;
+                         if);
+                         &LoxBoolean[] -> result[];
                       #);
                     NegateOperation: Operation
                       (# Type:: LoxNumber;
@@ -436,8 +441,7 @@ Interpreter: AstInterface
                          value: ^LoxValue;
                       enter theExpression[]
                       do theExpression[]->Evaluate->value[];
-                         (value[], theExpression[])->assertBoolean;
-                         not value.asBoolean->result.value;
+                         not value.isTruthy->result.value;
                       #);
                     visit_Assignment:: 
                       (# name: ^loxcfl.Variable;

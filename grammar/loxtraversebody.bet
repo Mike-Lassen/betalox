@@ -26,6 +26,8 @@ do (if S.symbol
        S[] -> do_Block;
     // lox.IfStmt then
        S[] -> do_IfStmt;
+    // lox.WhileStmt then
+       S[] -> do_WhileStmt;
     if);
 
 -- do_VarDecl_body: DoPart --
@@ -53,6 +55,10 @@ do B.getStatements -> do_Statements;
 do I.getCondition -> do_Expression;
    I.getStatement -> do_Statement;
    I.getElsePartOpt -> do_ElsePartOpt;
+
+-- do_WhileStmt_body: DoPart --
+do W.getCondition -> do_Expression;
+   W.getStatement -> do_Statement;
 
 -- do_ElsePartOpt_body: DoPart --
 do (if a.kind<>ast.kinds.optional then

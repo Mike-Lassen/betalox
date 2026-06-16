@@ -299,6 +299,18 @@ Interpreter: AstInterface
                              executor[]->(N.getElsePartOpt).accept;
                          if);
                       #);
+                    visit_WhileStmt::
+                      (#
+                      do loop:
+                           (# condition: ^LoxValue;
+                           do N.getCondition->Evaluate->condition[];
+                              (condition[], N.getCondition)->assertBoolean;
+                               (if condition.asBoolean then
+                                   N.getStatement->ExecuteStatement;
+                                   restart loop;
+                               if);    
+                           #);
+                      #);  
                  #);
             enter statement[]
             do visitor[]->statement.accept;

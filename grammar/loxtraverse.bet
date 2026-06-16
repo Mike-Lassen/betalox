@@ -63,6 +63,11 @@ lox_traverse:
        enter I[]
        <<SLOT do_IfStmt_body: DoPart>>
        #);
+     do_WhileStmt: (* cons *)
+       (# W: ^lox.WhileStmt
+       enter W[]
+       <<SLOT do_WhileStmt_body: DoPart>>
+       #);
      do_ElsePartOpt: (* optional *)
        (# a: ^astinterface.ast;
        enter a[]

@@ -14,7 +14,15 @@ Rule
 
 <Statements> ::* <Statement> ;
 
-<Statement> ::| <Declaration> | <ExprStmt> | <PrintStmt> | <NewlineStmt> | <Block> | <IfStmt> | <WhileStmt> ;
+<Statement> ::| <Declaration> 
+              | <ExprStmt> 
+              | <PrintStmt> 
+              | <NewlineStmt> 
+              | <Block> 
+              | <IfStmt> 
+              | <WhileStmt> 
+              | <ReturnStmt>
+              ;
 
 <Declaration> ::| <VarDecl> | <FunDecl> ;
 
@@ -42,9 +50,13 @@ Rule
 
 <WhileStmt> ::= 'while' '(' <Condition:Expression> ')' <Statement> ;
 
+<ReturnStmt> ::= 'return' <ExpressionOpt> ';' ;
+
 <ElsePartOpt> ::? <ElsePart> ;
 
 <ElsePart> ::= 'else' <Statement> ;
+
+<ExpressionOpt> ::? <Expression> ;
 
 <Expression> ::| <Assignment> | <Evaluation> ;
 

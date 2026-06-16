@@ -34,6 +34,8 @@ do (if S.symbol
        S[] -> do_IfStmt;
     // lox.WhileStmt then
        S[] -> do_WhileStmt;
+    // lox.ReturnStmt then
+       S[] -> do_ReturnStmt;
     if);
 
 -- do_Declaration_body: DoPart --
@@ -91,6 +93,9 @@ do I.getCondition -> do_Expression;
 do W.getCondition -> do_Expression;
    W.getStatement -> do_Statement;
 
+-- do_ReturnStmt_body: DoPart --
+do R.getExpressionOpt -> do_ExpressionOpt;
+
 -- do_ElsePartOpt_body: DoPart --
 do (if a.kind<>ast.kinds.optional then
        a[] -> do_ElsePart;
@@ -98,6 +103,11 @@ do (if a.kind<>ast.kinds.optional then
 
 -- do_ElsePart_body: DoPart --
 do E.getStatement -> do_Statement;
+
+-- do_ExpressionOpt_body: DoPart --
+do (if a.kind<>ast.kinds.optional then
+       a[] -> do_Expression;
+   if);
 
 -- do_Expression_body: DoPart --
 do (if E.symbol

@@ -3,6 +3,7 @@
 fun add(a, b) {
     print a + b;
     newline;
+    return "Hello, World";
 }
 
 fun sayHi(first, last) {
@@ -16,6 +17,7 @@ fun sayHi(first, last) {
 
 print clock();
 newline;
-add(2, 3);
+print add(2, 3); newline;
 sayHi("Dear", "Reader");
 print clock();
+

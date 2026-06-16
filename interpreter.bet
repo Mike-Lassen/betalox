@@ -148,7 +148,17 @@ Interpreter: AstInterface
                  do current.getNameDecl -> decl[];
                     (decl.getText, arguments.removeFront) -> env.define;
                  #);
-               block[]->interpreter.ExecuteStatement;
+               executing:
+                 (#
+                 do block[]->InterpretStatement
+                      (# onReturn::
+                           (#
+                           do value[] -> result[];
+                              leave executing;
+                           #);
+                      #);
+                    LoxNil[] -> result[];  
+                 #);
                popEnv;
             #);
        #);
@@ -277,6 +287,11 @@ Interpreter: AstInterface
                message[]->screen.putLine;
                stop;
             #);
+          onReturn:<
+            (# value: ^LoxValue;
+            enter value[]
+            do INNER
+            #);
           assertNumber:
             (# value: ^LoxValue;
                node: ^AST;
@@ -390,7 +405,16 @@ Interpreter: AstInterface
                                    restart loop;
                                if);    
                            #);
-                      #);  
+                      #);
+                    visit_ReturnStmt::
+                      (# expression: ^AST;
+                      do N.getExpressionOpt -> expression[];
+                         (if expression## <= loxcfl.Expression## then
+                             expression[]->Evaluate->onReturn;
+                          else
+                             LoxNil[]->onReturn;   
+                         if);
+                      #);
                  #);
             enter statement[]
             do visitor[]->statement.accept;
@@ -678,6 +702,11 @@ Interpreter: AstInterface
        enter program[]
        do program.getStatements->ExecuteStatements;
        #);
+     InterpretStatement: Interpret
+       (# statement: ^loxcfl.Statement;
+       enter statement[]
+       do statement[] -> ExecuteStatement;
+       #)  
   do 'grammar/lox-parser'->loxcfl.init;
      &Environment[]->env[];
      env.init;

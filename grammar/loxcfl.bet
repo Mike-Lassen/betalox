@@ -103,12 +103,19 @@ exit 13 #);
           accept::< (# do this(WhileStmt)[] -> V.visit_WhileStmt #);
        exit 16
        #);
+     ReturnStmt: Statement
+       (# getExpressionOpt: getson1(# #);
+          putExpressionOpt: putson1(# #);
+          astVisitor:: treeLevelVisitor;
+          accept::< (# do this(ReturnStmt)[] -> V.visit_ReturnStmt #);
+       exit 17
+       #);
      ElsePart: cons
        (# getStatement: getson1(# #);
           putStatement: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(ElsePart)[] -> V.visit_ElsePart #);
-       exit 18
+       exit 19
        #);
      Expression: cons
        (# 
@@ -120,14 +127,14 @@ exit 13 #);
           putExpression: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Assignment)[] -> V.visit_Assignment #);
-       exit 20
+       exit 22
        #);
      Name: cons
        (# getNameDecl: getson1(# #);
           putNameDecl: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Name)[] -> V.visit_Name #);
-       exit 21
+       exit 23
        #);
      Evaluation: Expression
        (# 
@@ -139,7 +146,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(LogicOr)[] -> V.visit_LogicOr #);
-       exit 23
+       exit 25
        #);
      Equivalence: Evaluation
        (# 
@@ -151,7 +158,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(LogicAnd)[] -> V.visit_LogicAnd #);
-       exit 25
+       exit 27
        #);
      Equality: Equivalence
        (# 
@@ -163,7 +170,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Equals)[] -> V.visit_Equals #);
-       exit 27
+       exit 29
        #);
      NotEquals: Equality
        (# getLeftSide: getson1(# #);
@@ -172,7 +179,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(NotEquals)[] -> V.visit_NotEquals #);
-       exit 28
+       exit 30
        #);
      Comparison: Equality
        (# 
@@ -184,7 +191,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Less)[] -> V.visit_Less #);
-       exit 30
+       exit 32
        #);
      LessEqual: Comparison
        (# getLeftSide: getson1(# #);
@@ -193,7 +200,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(LessEqual)[] -> V.visit_LessEqual #);
-       exit 31
+       exit 33
        #);
      Greater: Comparison
        (# getLeftSide: getson1(# #);
@@ -202,7 +209,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Greater)[] -> V.visit_Greater #);
-       exit 32
+       exit 34
        #);
      GreaterEqual: Comparison
        (# getLeftSide: getson1(# #);
@@ -211,7 +218,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(GreaterEqual)[] -> V.visit_GreaterEqual #);
-       exit 33
+       exit 35
        #);
      Term: Comparison
        (# 
@@ -223,7 +230,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Addition)[] -> V.visit_Addition #);
-       exit 35
+       exit 37
        #);
      Subtraction: Term
        (# getLeftSide: getson1(# #);
@@ -232,7 +239,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Subtraction)[] -> V.visit_Subtraction #);
-       exit 36
+       exit 38
        #);
      Factor: Term
        (# 
@@ -244,7 +251,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Multiplication)[] -> V.visit_Multiplication #);
-       exit 38
+       exit 40
        #);
      Division: Factor
        (# getLeftSide: getson1(# #);
@@ -253,7 +260,7 @@ exit 13 #);
           putRightSide: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Division)[] -> V.visit_Division #);
-       exit 39
+       exit 41
        #);
      Unary: Factor
        (# 
@@ -263,14 +270,14 @@ exit 13 #);
           putEvaluation: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Negation)[] -> V.visit_Negation #);
-       exit 41
+       exit 43
        #);
      BoolNegation: Unary
        (# getEvaluation: getson1(# #);
           putEvaluation: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(BoolNegation)[] -> V.visit_BoolNegation #);
-       exit 42
+       exit 44
        #);
      Call: Unary
        (# getCallee: getson1(# #);
@@ -279,11 +286,11 @@ exit 13 #);
           putArguments: putson2(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Call)[] -> V.visit_Call #);
-       exit 43
+       exit 45
        #);
      Arguments: list
        (# soncat::< Expression;
-       exit 44
+       exit 46
        #);
      Primary: Unary
        (# 
@@ -293,7 +300,7 @@ exit 13 #);
           putEvaluation: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Grouping)[] -> V.visit_Grouping #);
-       exit 46
+       exit 48
        #);
      BoolExp: Primary
        (# 
@@ -301,35 +308,35 @@ exit 13 #);
      TrueExp: BoolExp
        (#           astVisitor:: treeLevelVisitor;
           accept::< (# do this(TrueExp)[] -> V.visit_TrueExp #);
-exit 48 #);
+exit 50 #);
      FalseExp: BoolExp
        (#           astVisitor:: treeLevelVisitor;
           accept::< (# do this(FalseExp)[] -> V.visit_FalseExp #);
-exit 49 #);
+exit 51 #);
      NilExp: Primary
        (#           astVisitor:: treeLevelVisitor;
           accept::< (# do this(NilExp)[] -> V.visit_NilExp #);
-exit 50 #);
+exit 52 #);
      Variable: Primary
        (# getNameAppl: getson1(# #);
           putNameAppl: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Variable)[] -> V.visit_Variable #);
-       exit 51
+       exit 53
        #);
      Number: Primary
        (# getConst: getson1(# #);
           putConst: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Number)[] -> V.visit_Number #);
-       exit 52
+       exit 54
        #);
      Text: Primary
        (# getString: getson1(# #);
           putString: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Text)[] -> V.visit_Text #);
-       exit 53
+       exit 55
        #);
 
      grammarIdentification::<
@@ -339,7 +346,7 @@ exit 50 #);
      suffix::<
        (# do '.lox' -> theSuffix #);
      maxproductions::<
-       (# do 53 -> value #);
+       (# do 55 -> value #);
 
      init::<
        (# <<SLOT InitBody:dopart>> #);
@@ -398,6 +405,11 @@ exit 50 #);
             #);
           visit_WhileStmt:<
             (# N: ^lox.WhileStmt
+            enter N[]
+            do INNER
+            #);
+          visit_ReturnStmt:<
+            (# N: ^lox.ReturnStmt
             enter N[]
             do INNER
             #);
@@ -562,77 +574,81 @@ do
    IfStmt## -> genRefArray[15]##;
    1 -> kindArray[16]; 0 -> roomArray[16]; 2 -> sonArray[16]; 
    WhileStmt## -> genRefArray[16]##;
-   3 -> kindArray[17]; 2 -> roomArray[17]; 0 -> sonArray[17]; 
-   Optional## -> genRefArray[17]##;
-   1 -> kindArray[18]; 0 -> roomArray[18]; 1 -> sonArray[18]; 
-   ElsePart## -> genRefArray[18]##;
-   2 -> kindArray[19]; 2 -> roomArray[19]; 0 -> sonArray[19]; 
-   unExpanded## -> genRefArray[19]##;
-   1 -> kindArray[20]; 0 -> roomArray[20]; 2 -> sonArray[20]; 
-   Assignment## -> genRefArray[20]##;
-   1 -> kindArray[21]; 0 -> roomArray[21]; 1 -> sonArray[21]; 
-   Name## -> genRefArray[21]##;
-   2 -> kindArray[22]; 2 -> roomArray[22]; 0 -> sonArray[22]; 
-   unExpanded## -> genRefArray[22]##;
-   1 -> kindArray[23]; 0 -> roomArray[23]; 2 -> sonArray[23]; 
-   LogicOr## -> genRefArray[23]##;
+   1 -> kindArray[17]; 0 -> roomArray[17]; 1 -> sonArray[17]; 
+   ReturnStmt## -> genRefArray[17]##;
+   3 -> kindArray[18]; 2 -> roomArray[18]; 0 -> sonArray[18]; 
+   Optional## -> genRefArray[18]##;
+   1 -> kindArray[19]; 0 -> roomArray[19]; 1 -> sonArray[19]; 
+   ElsePart## -> genRefArray[19]##;
+   3 -> kindArray[20]; 2 -> roomArray[20]; 0 -> sonArray[20]; 
+   Optional## -> genRefArray[20]##;
+   2 -> kindArray[21]; 2 -> roomArray[21]; 0 -> sonArray[21]; 
+   unExpanded## -> genRefArray[21]##;
+   1 -> kindArray[22]; 0 -> roomArray[22]; 2 -> sonArray[22]; 
+   Assignment## -> genRefArray[22]##;
+   1 -> kindArray[23]; 0 -> roomArray[23]; 1 -> sonArray[23]; 
+   Name## -> genRefArray[23]##;
    2 -> kindArray[24]; 2 -> roomArray[24]; 0 -> sonArray[24]; 
    unExpanded## -> genRefArray[24]##;
    1 -> kindArray[25]; 0 -> roomArray[25]; 2 -> sonArray[25]; 
-   LogicAnd## -> genRefArray[25]##;
+   LogicOr## -> genRefArray[25]##;
    2 -> kindArray[26]; 2 -> roomArray[26]; 0 -> sonArray[26]; 
    unExpanded## -> genRefArray[26]##;
    1 -> kindArray[27]; 0 -> roomArray[27]; 2 -> sonArray[27]; 
-   Equals## -> genRefArray[27]##;
-   1 -> kindArray[28]; 0 -> roomArray[28]; 2 -> sonArray[28]; 
-   NotEquals## -> genRefArray[28]##;
-   2 -> kindArray[29]; 2 -> roomArray[29]; 0 -> sonArray[29]; 
-   unExpanded## -> genRefArray[29]##;
+   LogicAnd## -> genRefArray[27]##;
+   2 -> kindArray[28]; 2 -> roomArray[28]; 0 -> sonArray[28]; 
+   unExpanded## -> genRefArray[28]##;
+   1 -> kindArray[29]; 0 -> roomArray[29]; 2 -> sonArray[29]; 
+   Equals## -> genRefArray[29]##;
    1 -> kindArray[30]; 0 -> roomArray[30]; 2 -> sonArray[30]; 
-   Less## -> genRefArray[30]##;
-   1 -> kindArray[31]; 0 -> roomArray[31]; 2 -> sonArray[31]; 
-   LessEqual## -> genRefArray[31]##;
+   NotEquals## -> genRefArray[30]##;
+   2 -> kindArray[31]; 2 -> roomArray[31]; 0 -> sonArray[31]; 
+   unExpanded## -> genRefArray[31]##;
    1 -> kindArray[32]; 0 -> roomArray[32]; 2 -> sonArray[32]; 
-   Greater## -> genRefArray[32]##;
+   Less## -> genRefArray[32]##;
    1 -> kindArray[33]; 0 -> roomArray[33]; 2 -> sonArray[33]; 
-   GreaterEqual## -> genRefArray[33]##;
-   2 -> kindArray[34]; 2 -> roomArray[34]; 0 -> sonArray[34]; 
-   unExpanded## -> genRefArray[34]##;
+   LessEqual## -> genRefArray[33]##;
+   1 -> kindArray[34]; 0 -> roomArray[34]; 2 -> sonArray[34]; 
+   Greater## -> genRefArray[34]##;
    1 -> kindArray[35]; 0 -> roomArray[35]; 2 -> sonArray[35]; 
-   Addition## -> genRefArray[35]##;
-   1 -> kindArray[36]; 0 -> roomArray[36]; 2 -> sonArray[36]; 
-   Subtraction## -> genRefArray[36]##;
-   2 -> kindArray[37]; 2 -> roomArray[37]; 0 -> sonArray[37]; 
-   unExpanded## -> genRefArray[37]##;
+   GreaterEqual## -> genRefArray[35]##;
+   2 -> kindArray[36]; 2 -> roomArray[36]; 0 -> sonArray[36]; 
+   unExpanded## -> genRefArray[36]##;
+   1 -> kindArray[37]; 0 -> roomArray[37]; 2 -> sonArray[37]; 
+   Addition## -> genRefArray[37]##;
    1 -> kindArray[38]; 0 -> roomArray[38]; 2 -> sonArray[38]; 
-   Multiplication## -> genRefArray[38]##;
-   1 -> kindArray[39]; 0 -> roomArray[39]; 2 -> sonArray[39]; 
-   Division## -> genRefArray[39]##;
-   2 -> kindArray[40]; 2 -> roomArray[40]; 0 -> sonArray[40]; 
-   unExpanded## -> genRefArray[40]##;
-   1 -> kindArray[41]; 0 -> roomArray[41]; 1 -> sonArray[41]; 
-   Negation## -> genRefArray[41]##;
-   1 -> kindArray[42]; 0 -> roomArray[42]; 1 -> sonArray[42]; 
-   BoolNegation## -> genRefArray[42]##;
-   1 -> kindArray[43]; 0 -> roomArray[43]; 2 -> sonArray[43]; 
-   Call## -> genRefArray[43]##;
-   1 -> kindArray[44]; 0 -> roomArray[44]; 0 -> sonArray[44]; 
-   Arguments## -> genRefArray[44]##;
-   2 -> kindArray[45]; 2 -> roomArray[45]; 0 -> sonArray[45]; 
-   unExpanded## -> genRefArray[45]##;
-   1 -> kindArray[46]; 0 -> roomArray[46]; 1 -> sonArray[46]; 
-   Grouping## -> genRefArray[46]##;
+   Subtraction## -> genRefArray[38]##;
+   2 -> kindArray[39]; 2 -> roomArray[39]; 0 -> sonArray[39]; 
+   unExpanded## -> genRefArray[39]##;
+   1 -> kindArray[40]; 0 -> roomArray[40]; 2 -> sonArray[40]; 
+   Multiplication## -> genRefArray[40]##;
+   1 -> kindArray[41]; 0 -> roomArray[41]; 2 -> sonArray[41]; 
+   Division## -> genRefArray[41]##;
+   2 -> kindArray[42]; 2 -> roomArray[42]; 0 -> sonArray[42]; 
+   unExpanded## -> genRefArray[42]##;
+   1 -> kindArray[43]; 0 -> roomArray[43]; 1 -> sonArray[43]; 
+   Negation## -> genRefArray[43]##;
+   1 -> kindArray[44]; 0 -> roomArray[44]; 1 -> sonArray[44]; 
+   BoolNegation## -> genRefArray[44]##;
+   1 -> kindArray[45]; 0 -> roomArray[45]; 2 -> sonArray[45]; 
+   Call## -> genRefArray[45]##;
+   1 -> kindArray[46]; 0 -> roomArray[46]; 0 -> sonArray[46]; 
+   Arguments## -> genRefArray[46]##;
    2 -> kindArray[47]; 2 -> roomArray[47]; 0 -> sonArray[47]; 
    unExpanded## -> genRefArray[47]##;
-   1 -> kindArray[48]; 0 -> roomArray[48]; 0 -> sonArray[48]; 
-   TrueExp## -> genRefArray[48]##;
-   1 -> kindArray[49]; 0 -> roomArray[49]; 0 -> sonArray[49]; 
-   FalseExp## -> genRefArray[49]##;
+   1 -> kindArray[48]; 0 -> roomArray[48]; 1 -> sonArray[48]; 
+   Grouping## -> genRefArray[48]##;
+   2 -> kindArray[49]; 2 -> roomArray[49]; 0 -> sonArray[49]; 
+   unExpanded## -> genRefArray[49]##;
    1 -> kindArray[50]; 0 -> roomArray[50]; 0 -> sonArray[50]; 
-   NilExp## -> genRefArray[50]##;
-   1 -> kindArray[51]; 0 -> roomArray[51]; 1 -> sonArray[51]; 
-   Variable## -> genRefArray[51]##;
-   1 -> kindArray[52]; 0 -> roomArray[52]; 1 -> sonArray[52]; 
-   Number## -> genRefArray[52]##;
+   TrueExp## -> genRefArray[50]##;
+   1 -> kindArray[51]; 0 -> roomArray[51]; 0 -> sonArray[51]; 
+   FalseExp## -> genRefArray[51]##;
+   1 -> kindArray[52]; 0 -> roomArray[52]; 0 -> sonArray[52]; 
+   NilExp## -> genRefArray[52]##;
    1 -> kindArray[53]; 0 -> roomArray[53]; 1 -> sonArray[53]; 
-   Text## -> genRefArray[53]##;
+   Variable## -> genRefArray[53]##;
+   1 -> kindArray[54]; 0 -> roomArray[54]; 1 -> sonArray[54]; 
+   Number## -> genRefArray[54]##;
+   1 -> kindArray[55]; 0 -> roomArray[55]; 1 -> sonArray[55]; 
+   Text## -> genRefArray[55]##;

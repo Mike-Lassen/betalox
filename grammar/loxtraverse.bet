@@ -93,6 +93,11 @@ lox_traverse:
        enter W[]
        <<SLOT do_WhileStmt_body: DoPart>>
        #);
+     do_ReturnStmt: (* cons *)
+       (# R: ^lox.ReturnStmt
+       enter R[]
+       <<SLOT do_ReturnStmt_body: DoPart>>
+       #);
      do_ElsePartOpt: (* optional *)
        (# a: ^astinterface.ast;
        enter a[]
@@ -102,6 +107,11 @@ lox_traverse:
        (# E: ^lox.ElsePart
        enter E[]
        <<SLOT do_ElsePart_body: DoPart>>
+       #);
+     do_ExpressionOpt: (* optional *)
+       (# a: ^astinterface.ast;
+       enter a[]
+       <<SLOT do_ExpressionOpt_body: DoPart>>
        #);
      do_Expression: (* alternation *)
        (# E: ^lox.Expression

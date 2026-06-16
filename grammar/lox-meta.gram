@@ -14,7 +14,7 @@ Rule
 
 <Statements> ::* <Statement> ;
 
-<Statement> ::| <VarDecl> | <ExprStmt> | <PrintStmt> | <Block> | <IfStmt> | <WhileStmt> ;
+<Statement> ::| <VarDecl> | <ExprStmt> | <PrintStmt> | <NewlineStmt> | <Block> | <IfStmt> | <WhileStmt> ;
 
 <VarDecl> ::= 'var' <Name> <InitializerOpt> ';' ;
 
@@ -25,6 +25,8 @@ Rule
 <ExprStmt> ::= <Expression> ';' ;
 
 <PrintStmt> ::= 'print' <Expression> ';' ;
+
+<NewlineStmt> ::= 'newline' ';';
 
 <Block> ::= '{' <Statements> '}' ;
 

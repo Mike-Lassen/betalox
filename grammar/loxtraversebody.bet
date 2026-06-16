@@ -22,6 +22,8 @@ do (if S.symbol
        S[] -> do_ExprStmt;
     // lox.PrintStmt then
        S[] -> do_PrintStmt;
+    // lox.NewlineStmt then
+       S[] -> do_NewlineStmt;
     // lox.Block then
        S[] -> do_Block;
     // lox.IfStmt then
@@ -47,6 +49,9 @@ do E.getExpression -> do_Expression;
 
 -- do_PrintStmt_body: DoPart --
 do P.getExpression -> do_Expression;
+
+-- do_NewlineStmt_body: DoPart --
+do 
 
 -- do_Block_body: DoPart --
 do B.getStatements -> do_Statements;

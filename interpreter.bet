@@ -263,7 +263,11 @@ Interpreter: AstInterface
                     visit_PrintStmt:: 
                       (# result: ^LoxValue;
                       do N.getExpression->Evaluate->result[];
-                         result.asString->screen.putLine;
+                         result.asString->screen.putText;
+                      #);
+                    visit_NewlineStmt::
+                      (#
+                      do screen.newline;
                       #);
                     visit_VarDecl:: 
                       (# name: ^loxcfl.Name;

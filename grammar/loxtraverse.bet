@@ -53,6 +53,11 @@ lox_traverse:
        enter P[]
        <<SLOT do_PrintStmt_body: DoPart>>
        #);
+     do_NewlineStmt: (* cons *)
+       (# N: ^lox.NewlineStmt
+       enter N[]
+       <<SLOT do_NewlineStmt_body: DoPart>>
+       #);
      do_Block: (* cons *)
        (# B: ^lox.Block
        enter B[]

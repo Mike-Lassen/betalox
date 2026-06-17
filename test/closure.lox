@@ -1,0 +1,21 @@
+-- program : Program : lox --
+
+
+
+var message = "Outer Message";
+
+fun env() {
+    var message = "Talk Message";
+    fun talk() {
+        return message;
+    }
+    return talk;
+}
+
+print message;newline;
+var callback = env();
+print callback();
+newline;
+
+print callback;newline;
+print clock;newline;

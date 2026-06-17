@@ -7,11 +7,16 @@ fun fib(n) {
 }
 
 var i = 0;
-while(i < 20) {
+while(i < 25) {
     print "fib(";
     print i;
     print ") = ";
-    print fib(i);
+    var before = clock();
+    var value = fib(i);
+    var after = clock();
+    print value;
+    print " - elapsed: ";
+    print after - before;
     newline;
     i = i + 1;
 }

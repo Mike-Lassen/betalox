@@ -5,7 +5,7 @@ INCLUDE '~beta/basiclib/numberio';
 INCLUDE '~beta/sysutils/time';
 INCLUDE '~beta/containers/dictionary';
 INCLUDE '~beta/containers/seqContainers';
-
+INCLUDE '~beta/sysutils/objinterface';
 
 -- lib: attributes --
 Interpreter: AstInterface
@@ -136,13 +136,14 @@ Interpreter: AstInterface
        #);
      LoxFunction: LoxCallable
        (# name: ^Text;
+          closure: ^Environment;
           parameters: ^loxcfl.Parameters;
           block: ^loxcfl.Block;
           arity:: (# do parameters.noOfSons -> value #);
           call::
             (# env: ^Environment;
             do &Environment[] -> env[];
-               globals[] -> env.init;
+               closure[] -> env.init;
                parameters.newScan
                  (# decl: ^NameDecl;
                     val: ^LoxValue;
@@ -162,9 +163,20 @@ Interpreter: AstInterface
                     LoxNil[] -> result[];  
                  #);
             #);
+          asString::
+            (#
+            do '<fun ' -> value[];
+                name[] -> value.putText;
+                '>' -> value.putText;
+            #);  
        #);
      NativeFunction: LoxCallable
-       (#
+       (# asString::
+            (#
+            do '<native ' -> value[];
+                THIS(NativeFunction)[] -> getPatternName -> value.putText;
+                '>' -> value.putText;
+            #);   
        #);
      Clock: NativeFunction
        (# arity:: (# do 0 -> value #);
@@ -386,6 +398,7 @@ Interpreter: AstInterface
                          name.getNameDecl -> decl[];
                          &LoxFunction[] -> theLoxFunction[];
                          decl.getText -> theLoxFunction.name[];
+                         env[] -> theLoxFunction.closure[]; 
                          function.getParameters -> theLoxFunction.parameters[];
                          function.getBlock -> theLoxFunction.block[];
                          (decl.getText, theLoxFunction[]) -> env.define;

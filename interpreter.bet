@@ -127,10 +127,9 @@ Interpreter: AstInterface
           asCallable:: (# do THIS(LoxCallable)[] -> callable[] #);
           arity:< integerValue;
           call:<
-            (# interpreter: ^Interpret;
-               arguments: ^ArgumentList;
+            (# arguments: ^ArgumentList;
                result: ^LoxValue;
-            enter (interpreter[], arguments[])
+            enter arguments[]
             do INNER
             exit result[]
             #);
@@ -141,16 +140,19 @@ Interpreter: AstInterface
           block: ^loxcfl.Block;
           arity:: (# do parameters.noOfSons -> value #);
           call::
-            (#
-            do pushEnv;
+            (# env: ^Environment;
+            do &Environment[] -> env[];
+               globals[] -> env.init;
                parameters.newScan
                  (# decl: ^NameDecl;
+                    val: ^LoxValue;
                  do current.getNameDecl -> decl[];
-                    (decl.getText, arguments.removeFront) -> env.define;
+                    arguments.removeFront -> val[];
+                    (decl.getText, val[]) -> env.define;
                  #);
                executing:
                  (#
-                 do block[]->InterpretStatement
+                 do (env[], block[])->InterpretStatement
                       (# onReturn::
                            (#
                            do value[] -> result[];
@@ -159,7 +161,6 @@ Interpreter: AstInterface
                       #);
                     LoxNil[] -> result[];  
                  #);
-               popEnv;
             #);
        #);
      NativeFunction: LoxCallable
@@ -243,18 +244,21 @@ Interpreter: AstInterface
                if);
             exit ok
             #);
+          display:
+            (#
+            do values.scanAssociations
+                 (#
+                 do k[] -> screen.putText;
+                    ': ' -> screen.putText;
+                    e.asString -> screen.putLine;
+                 #);
+               (if enclosing[] <> NONE then
+                   '-- ENCLOSING -- ' -> screen.putLine;
+                   enclosing.display;
+               if);  
+            #);  
        #);
-     env: ^Environment;
-     pushEnv:
-       (# new: ^Environment
-       do &Environment[]->new[];
-          env[]->new.init;
-          new[]->env[];
-       #);
-     popEnv:
-       (# 
-       do env.enclosing[]->env[];
-       #);
+     globals: ^Environment;
      interpretFile:
        (# name: ^Text;
           group: ^FragmentGroup;
@@ -271,7 +275,7 @@ Interpreter: AstInterface
                    (1, screen[], loxcfl[])->form.root.dump;
                    screen.newline;
                    screen.newline;
-                   form.root[]->InterpretProgram;
+                   (globals[], form.root[])->InterpretProgram;
                 #);
            else
               'Unable to open '->screen.putText;
@@ -279,7 +283,19 @@ Interpreter: AstInterface
           if);
        #);
      Interpret:
-       (# error:<
+       (# env: ^Environment;
+          pushEnv:
+            (# new: ^Environment
+            do &Environment[]->new[];
+               env[]->new.init;
+               new[]->env[];
+            #);
+          popEnv:
+            (# 
+            do env.enclosing[]->env[];
+            #);
+     
+          error:<
             (# node: ^AST;
                message: ^Text;
             enter (node[], message[])
@@ -558,7 +574,7 @@ Interpreter: AstInterface
                              (if args.size <> callable.arity then
                                  (N[], 'arity error') -> error;
                              if);
-                             (THIS(Interpret)[], args[]) -> callable.call -> result[];
+                             args[] -> callable.call -> result[];
                          if);
                       #);
                     visit_Assignment:: 
@@ -688,6 +704,7 @@ Interpreter: AstInterface
             do visitor[]->expression.accept;
             exit result[]
             #);
+       enter env[]
        do INNER;
        #);
      InterpretExpression: Interpret
@@ -708,9 +725,9 @@ Interpreter: AstInterface
        do statement[] -> ExecuteStatement;
        #)  
   do 'grammar/lox-parser'->loxcfl.init;
-     &Environment[]->env[];
-     env.init;
-     ('clock', &Clock[]) -> env.define;
+     &Environment[]->globals[];
+     globals.init;
+     ('clock', &Clock[]) -> globals.define;
      INNER;
   #);
 

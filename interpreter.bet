@@ -187,9 +187,8 @@ Interpreter: AstInterface
             #);
        #);
        
-     ValueDictionary: dictionary
+     TextKeyDictionary: dictionary
        (# key:: Text;
-          element:: LoxValue;
           hashFunction:: 
             (# 
             do k.scanAll
@@ -202,8 +201,11 @@ Interpreter: AstInterface
             #);
           keyEqual:: 
             (# 
-            do left[]->right.equal->value;
+            do left[]->right.equal->value
             #);
+       #);
+     ValueDictionary: TextKeyDictionary
+       (# element:: LoxValue;
        #);
      Environment:
        (# values: @ValueDictionary;
@@ -293,6 +295,101 @@ Interpreter: AstInterface
               'Unable to open '->screen.putText;
               name[]->screen.putLine;
           if);
+       #);
+     Resolver:
+       (# declare:
+            (# name: ^loxcfl.Name;
+               decl: ^Declaration;
+            enter name[]
+            do &Declaration[] -> decl[];
+               name[] -> decl.name[];
+               decl[] -> (scopes.back).declare;
+            exit decl[]   
+            #);
+          scopes: @Deque
+            (# element:: Scope;
+            #);
+          Declaration:
+            (# name: ^loxcfl.Name;
+               defined: @boolean;
+               getText:
+                 (# nameDcl: ^NameDecl;
+                    value: ^Text;
+                 do name.getNameDecl -> nameDcl[];
+                    nameDcl.getText -> value[];
+                 exit value[]
+                 #);
+            #);
+          Scope:
+            (# declarations: @TextKeyDictionary
+                 (# element:: Declaration 
+                 #);
+               init:
+                 (#
+                 do declarations.init;
+                 #);
+               declare:
+                 (# decl: ^Declaration;
+                 enter decl[]
+                 do (decl.getText, decl[]) -> declarations.associate;
+                 #);
+            #);  
+          beginScope:
+            (# new: ^Scope;
+            do &Scope[] -> new[];
+               new.init;
+               new[] -> scopes.insertBack;
+            #);
+          endScope:
+            (#
+            do scopes.removeBack;
+            #);
+          resolveProgram:
+            (# program: ^loxcfl.Program;
+            enter program[]
+            do program.getStatements -> resolveStatements;
+            #);
+          resolveStatements:
+            (# statements: ^loxcfl.Statements;
+            enter statements[]
+            do statements.newScan
+                 (#
+                 do current[] -> resolveStatement;
+                 #);
+            #);
+          resolveStatement:
+            (# statement: ^loxcfl.Statement;
+               visitor: @loxcfl.treeLevelVisitor
+                 (# visit_Block::
+                      (#
+                      do beginScope;
+                         N.getStatements -> resolveStatements;
+                         endScope;
+                      #);
+                    visit_VarDecl::
+                      (# decl: ^Declaration;
+                         initializer: ^AST;
+                      do N.getName -> declare -> decl[];
+                         N.getInitializerOpt -> initializer[];
+                         (if initializer## <= loxcfl.Expression## then
+                             initializer[] -> resolveExpression;
+                         if);
+                         true -> decl.defined;
+                      #);
+                 #);
+            enter statement[]
+            do visitor[] -> statement.accept;
+            #);
+          resolveExpression:
+            (# expression: ^loxcfl.Expression;
+               visitor: @loxcfl.treeLevelVisitor
+                 (#
+                 #);
+            enter expression[]
+            do visitor[] -> expression.accept;
+            #);
+       do scopes.init;
+          INNER
        #);
      Interpret:
        (# env: ^Environment;

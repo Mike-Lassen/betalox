@@ -113,3 +113,12 @@ Rule
 <Variable>      ::= <NameAppl> ;
 <Number>        ::= <Const> ;
 <Text>          ::= <String> 
+
+Attribute
+
+<Expression>: 0
+
+<Variable>:
+(# level: integer;
+   declaration: Name
+#)

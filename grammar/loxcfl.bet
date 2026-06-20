@@ -119,7 +119,7 @@ exit 13 #);
        #);
      Expression: cons
        (# 
-       #);
+       <<SLOT ExpressionAttributes:attributes>>; #);
      Assignment: Expression
        (# getVariable: getson1(# #);
           putVariable: putson1(# #);
@@ -322,6 +322,20 @@ exit 52 #);
           putNameAppl: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Variable)[] -> V.visit_Variable #);
+          level: @integer;
+          declaration: ^Name;
+          pack::<
+            (#
+            do level -> putValue;
+               declaration[] -> putAstRef;
+               INNER;
+            #);
+          unPack::<
+            (#
+            do getValue -> level;
+               getAstRef -> declaration[];
+               INNER;
+            #);
        exit 53
        #);
      Number: Primary

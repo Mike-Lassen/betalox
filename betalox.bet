@@ -20,7 +20,7 @@ Interpreter
                 (# 
                 do (globals[], root[])
                      ->InterpretExpression
-                       (# error:: 
+                       (# runtimeError:: 
                             (# 
                             do 'error at '->screen.putText;
                                node.start->screen.putInt;

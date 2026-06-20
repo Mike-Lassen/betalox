@@ -1,0 +1,14 @@
+-- program : Program : lox --
+
+
+var a = "global";
+{
+  fun showA() {
+    print a;
+    newline;
+  }
+
+  showA();
+  var a = "block";
+  showA();
+}

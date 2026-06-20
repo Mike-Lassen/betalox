@@ -1,7 +1,3 @@
 -- program : Program : lox --
 
-var name = "Mike";
-print "Hello, ";
-print name;
-newline;
-
+print "Hello, World";

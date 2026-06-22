@@ -1,20 +1,14 @@
 -- program : Program : lox --
 
 
-var a = "global";
-{
-  fun showA() {
-    print a;
-    newline;
+class Breakfast {
+  cook() {
+    print "Eggs a-fryin'!";
   }
 
-  showA();
-  var a = "block";
-  showA();
-  var year = 2026;
-  print "Year " + year;
-  newline;
-  var pi = 3.14159;
-  print "pi = " + pi;
-  return pi;
+  serve(who) {
+    print "Enjoy your breakfast, " + who + ".";
+  }
 }
+
+print Breakfast();

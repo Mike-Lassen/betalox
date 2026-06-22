@@ -43,6 +43,16 @@ lox_traverse:
        enter F[]
        <<SLOT do_FunDecl_body: DoPart>>
        #);
+     do_ClassDecl: (* cons *)
+       (# C: ^lox.ClassDecl
+       enter C[]
+       <<SLOT do_ClassDecl_body: DoPart>>
+       #);
+     do_Functions: (* list *)
+       (# F: ^lox.Functions
+       enter F[]
+       <<SLOT do_Functions_body: DoPart>>
+       #);
      do_Function: (* cons *)
        (# F: ^lox.Function
        enter F[]

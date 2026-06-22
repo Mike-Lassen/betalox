@@ -21,6 +21,8 @@ do (if S.symbol
        S[] -> do_VarDecl;
     // lox.FunDecl then
        S[] -> do_FunDecl;
+    // lox.ClassDecl then
+       S[] -> do_ClassDecl;
        (* End sub-alternation <Declaration> *)
     // lox.ExprStmt then
        S[] -> do_ExprStmt;
@@ -44,6 +46,8 @@ do (if D.symbol
        D[] -> do_VarDecl;
     // lox.FunDecl then
        D[] -> do_FunDecl;
+    // lox.ClassDecl then
+       D[] -> do_ClassDecl;
     if);
 
 -- do_VarDecl_body: DoPart --
@@ -52,6 +56,16 @@ do V.getName -> do_Name;
 
 -- do_FunDecl_body: DoPart --
 do F.getFunction -> do_Function;
+
+-- do_ClassDecl_body: DoPart --
+do C.getName -> do_Name;
+   C.getFunctions -> do_Functions;
+
+-- do_Functions_body: DoPart --
+do F.newscan
+   (#
+   do current[] -> do_Function;
+   #);
 
 -- do_Function_body: DoPart --
 do F.getName -> do_Name;

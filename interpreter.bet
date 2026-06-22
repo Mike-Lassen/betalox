@@ -54,6 +54,12 @@ Interpreter: AstInterface
             do INNER;
             exit callable[]
             #);
+          isClass:< booleanValue;
+          asClass:<
+            (# value: ^LoxClass;
+            do INNER
+            exit value[]
+            #);
           isTruthy:< booleanValue;
        #);
      LoxNumber: LoxValue
@@ -196,6 +202,32 @@ Interpreter: AstInterface
             do '<fun '->value[];
                name[]->value.putText;
                '>'->value.putText;
+            #);
+       #);
+     LoxClass: LoxCallable
+       (# 
+          name: ^Text;
+          asString::
+            (#
+            do name[] -> value[];
+            #);
+          isClass:: trueValue;
+          asClass::
+            (# do THIS(LoxClass)[] -> value[] #);
+          call::
+            (# instance: ^LoxInstance;
+            do &LoxInstance[] -> instance[];
+               THIS(LoxClass)[] -> instance.class[];
+               instance[] -> result[];
+            #);  
+       #);
+     LoxInstance: LoxValue
+       (# class: ^LoxClass;
+          asString::
+            (#
+            do &Text[] -> value[];
+               class.name[] -> value.putText;
+               ' instance' -> value.putText;
             #);
        #);
      NativeFunction: LoxCallable
@@ -522,6 +554,11 @@ Interpreter: AstInterface
                       (# decl: ^Declaration;
                       do (N.getFunction, functionTypes.function)->resolveFunction;
                       #);
+                    visit_ClassDecl::
+                      (# decl: ^Declaration;
+                      do N.getName->declare->decl[];
+                         true -> decl.defined;
+                      #);
                     visit_IfStmt:: 
                       (# resolver: @loxcfl.treeLevelVisitor
                            (# visit_ElsePart:: 
@@ -795,6 +832,18 @@ Interpreter: AstInterface
                          function.getParameters->theLoxFunction.parameters[];
                          function.getBlock->theLoxFunction.block[];
                          (decl.getText, theLoxFunction[])->env.define;
+                      #);
+                    visit_ClassDecl::
+                      (# name: ^loxcfl.Name;
+                         decl: ^NameDecl;
+                         value: ^LoxClass;
+                      do N.getName->name[];
+                         name.getNameDecl->decl[];
+                         &LoxClass[] -> value[];
+                         decl.getText -> value.name[];
+                         (if not ((decl.getText, value[])->env.define) then
+                             (N[], 'name already defined')->runtimeError;
+                         if);
                       #);
                     visit_Block:: 
                       (# 

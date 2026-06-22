@@ -2,7 +2,7 @@
 Grammar lox:
 
 Option
-  version=3
+  version=4
   comBegin='/*'
   comEnd='*/'
   stringChar='\"'
@@ -24,11 +24,15 @@ Rule
               | <ReturnStmt>
               ;
 
-<Declaration> ::| <VarDecl> | <FunDecl> ;
+<Declaration> ::| <VarDecl> | <FunDecl> | <ClassDecl>;
 
 <VarDecl> ::= 'var' <Name> <InitializerOpt> ';' ;
 
 <FunDecl> ::= 'fun' <Function> ;
+
+<ClassDecl> ::= 'class' <Name> '{' <Functions> '}' ;
+
+<Functions> ::* <Function> ;
 
 <Function> ::= <Name> '(' <Parameters> ')' <Block> ;
 

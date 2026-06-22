@@ -44,7 +44,8 @@ Interpreter
           if);
        #);
     name: ^Text;
-  do (if noOfArguments > 1 then
+  do false -> trace;
+     (if noOfArguments > 1 then
         2 -> arguments -> name[];
      if);
      (if name[] <> NONE then

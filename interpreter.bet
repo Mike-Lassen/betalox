@@ -2,6 +2,7 @@ ORIGIN '~beta/newmps/astlevel';
 INCLUDE 'grammar/loxcfl';
 INCLUDE 'grammar/loxgram';
 INCLUDE '~beta/basiclib/numberio';
+INCLUDE '~beta/basiclib/math';
 INCLUDE '~beta/sysutils/time';
 INCLUDE '~beta/containers/dictionary';
 INCLUDE '~beta/containers/seqContainers';
@@ -12,6 +13,13 @@ Interpreter: AstInterface
   (# loxcfl: @lox;
      gram: @grammar;
      trace: @boolean;
+
+     dumpAst:
+       (# node: ^AST;
+       enter node[]
+       do (1, screen[], loxcfl[])->node.dump;
+       #);
+
      ArgumentList: Deque
        (# Element:: LoxValue;
        #);
@@ -55,6 +63,13 @@ Interpreter: AstInterface
             do value->output.putReal;
             #);
           isNumber:: trueValue;
+          isInteger:
+            (# result: @boolean;
+            do (if (value -> floor) = value then
+                   true -> result;
+               if);
+            exit result
+            #);
           asNumber:: 
             (# 
             do THIS(LoxNumber).value->value
@@ -62,7 +77,12 @@ Interpreter: AstInterface
           asString:: 
             (# 
             do &Text[]->value[];
-               THIS(LoxNumber).value->value.putReal;
+               (if isInteger then
+                   THIS(LoxNumber).value->value.putInt;
+               else
+                   THIS(LoxNumber).value->value.putReal;
+               if)
+               
             #);
           isTruthy:: trueValue;
        enter value
@@ -303,8 +323,17 @@ Interpreter: AstInterface
        do (name[], screen[])->TOP.open->group[];
           (if group[] <> none then
               (if trace then
-                  'Executing group '->screen.putText;
+                  'Executing group '->screen.putLine;
+                  '  shortName: ' ->  screen.putText;
+                  group.shortName -> screen.putLine;
+                  '  textFileName: ' ->  screen.putText;
                   group.textFileName->screen.putLine;
+                  '  diskFileName: ' ->  screen.putText;
+                  group.diskFileName->screen.putLine;
+                  '  fullName: ' ->  screen.putText;
+                  group.fullName->screen.putLine;
+                   '  name: ' ->  screen.putText;
+                  group.name->screen.putLine;
               if);
               group.scan
                 (# form: ^FragmentForm;
@@ -316,7 +345,41 @@ Interpreter: AstInterface
                        screen.newline;
                        screen.newline;
                    if);
-                   (globals[], form.root[])->InterpretProgram;
+                   interpreting:
+                   (globals[], form.root[])->InterpretProgram
+                     (# semanticError::
+                          (#
+                          do screen.newline;
+                             '=== Semantic Error ===' -> screen.putLine;
+                             node[] -> dumpAst;
+                             screen.newline;
+                             '*** ' -> screen.putText;
+                             message[] -> screen.putLine;
+                             '---- char positions: ' -> screen.putText;
+                             node.start -> screen.putInt;
+                             ', ' -> screen.putText;
+                             node.end -> screen.putInt;
+                             screen.newline;
+                             'Execution stopped because of semantic error' -> screen.putLine;
+                             leave interpreting;
+                          #);
+                        runtimeError::
+                          (#
+                          do screen.newline;
+                             '=== Runtime Error ===' -> screen.putLine;
+                             node[] -> dumpAst;
+                             screen.newline;
+                             '*** ' -> screen.putText;
+                             message[] -> screen.putLine;
+                             '---- char positions: ' -> screen.putText;
+                             node.start -> screen.putInt;
+                             ', ' -> screen.putText;
+                             node.end -> screen.putInt;
+                             screen.newline;
+                             'Execution stopped because of runtime error' -> screen.putLine;
+                             leave interpreting;
+                          #);  
+                     #);
                 #);
            else
               'Unable to open '->screen.putText;
@@ -374,7 +437,7 @@ Interpreter: AstInterface
             enter (node[], message[])
             do INNER;
                message[]->screen.putLine;
-               stop;
+               (failureTrace, message[]) -> stop;
             #);
           declare:
             (# name: ^loxcfl.Name;
@@ -395,6 +458,12 @@ Interpreter: AstInterface
             exit ok
             #);
           top: ^Scope;
+          functionTypes: @
+            (# main: (# exit 1 #);
+               function: (# exit 2 #);
+            #);
+          currentFunction: @integer;
+
           beginScope:
             (# new: ^Scope;
             do &Scope[]->new[];
@@ -451,7 +520,7 @@ Interpreter: AstInterface
                       #);
                     visit_FunDecl:: 
                       (# decl: ^Declaration;
-                      do N.getFunction->resolveFunction;
+                      do (N.getFunction, functionTypes.function)->resolveFunction;
                       #);
                     visit_IfStmt:: 
                       (# resolver: @loxcfl.treeLevelVisitor
@@ -471,7 +540,10 @@ Interpreter: AstInterface
                       #);
                     visit_ReturnStmt:: 
                       (# expression: ^AST;
-                      do N.getExpressionOpt->expression[];
+                      do (if currentFunction = functionTypes.main then
+                           (N[], 'Cant return from top-level code.') -> error;
+                         if);
+                         N.getExpressionOpt->expression[];
                          (if expression## <= loxcfl.Expression## then
                              expression[]->resolveExpression;
                          if)
@@ -483,8 +555,12 @@ Interpreter: AstInterface
           resolveFunction:
             (# function: ^loxcfl.Function;
                parameters: ^loxcfl.Parameters;
-            enter function[]
-            do true->(function.getName->declare).defined;
+               type: @integer;
+               enclosingType: @integer;
+            enter (function[], type)
+            do currentFunction -> enclosingType;
+               type -> currentFunction;
+               true->(function.getName->declare).defined;
                beginScope;
                function.getParameters->parameters[];
                parameters.newScan
@@ -493,6 +569,7 @@ Interpreter: AstInterface
                  #);
                function.getBlock->resolveStatement;
                endScope;
+               enclosingType -> currentFunction;
             #);
           resolveExpression:
             (# expression: ^loxcfl.Expression;
@@ -596,7 +673,8 @@ Interpreter: AstInterface
             do visitor[]->expression.accept;
             #);
        enter top[]
-       do INNER
+       do functionTypes.main -> currentFunction;
+          INNER
        #);
      ProgramResolver: Resolver
        (# program: ^loxcfl.Program;
@@ -627,7 +705,8 @@ Interpreter: AstInterface
             (# node: ^AST;
                message: ^Text;
             enter (node[], message[])
-            do INNER
+            do INNER;
+               (failureTrace, message[]) -> stop;
             #);
           onReturn:<
             (# value: ^LoxValue;
@@ -956,8 +1035,28 @@ Interpreter: AstInterface
                          theBoolean[]->result[];
                       #);
                     visit_Addition:: 
-                      (# 
-                      do (N.getLeftSide, N.getRightSide)->Add->result[];
+                      (# left: ^LoxValue;
+                         right: ^LoxValue;
+                         stringResult: ^LoxString;
+                         numberResult: ^LoxNumber;
+                      do N.getLeftSide -> Evaluate -> left[];
+                         (if true
+                          // left.isNumber then
+                             N.getRightSide -> Evaluate -> right[];
+                             (right[], N[]) -> assertNumber;
+                             &LoxNumber[] -> numberResult[];
+                             left.asNumber + right.asNumber -> numberResult.value;
+                             numberResult[] -> result[];
+                          // left.isString then
+                             N.getRightSide -> Evaluate -> right[];
+                             &LoxString[] -> stringResult[];
+                             &Text[] -> stringResult.value[];
+                            left.asString -> stringResult.value.putText;
+                            right.asString -> stringResult.value.putText;
+                            stringResult[] -> result[];
+                          else
+                             (N[], 'number or string required') -> runtimeError;
+                         if);
                       #);
                     visit_Subtraction:: 
                       (# 
@@ -1049,7 +1148,12 @@ Interpreter: AstInterface
        do true->clockDecl.defined;
           true->clockDecl.native;
           ('clock', clockDecl[])->globalScope.declare;
-          (globalScope[], program[])->ProgramResolver;
+          (globalScope[], program[])->ProgramResolver
+            (# error::
+                 (#
+                 do (node[], message[]) -> semanticError;
+                 #);
+            #);
           program.getStatements->ExecuteStatements;
        #);
      InterpretStatement: Interpret

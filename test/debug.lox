@@ -11,4 +11,10 @@ var a = "global";
   showA();
   var a = "block";
   showA();
+  var year = 2026;
+  print "Year " + year;
+  newline;
+  var pi = 3.14159;
+  print "pi = " + pi;
+  return pi;
 }

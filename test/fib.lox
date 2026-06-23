@@ -20,4 +20,3 @@ while(i < 10) {
     newline;
     i = i + 1;
 }
-

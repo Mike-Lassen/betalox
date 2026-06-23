@@ -1,14 +1,15 @@
 -- program : Program : lox --
 
 
-class Breakfast {
-  cook() {
-    print "Eggs a-fryin'!";
-  }
+var message = "Breakfast!";
 
-  serve(who) {
-    print "Enjoy your breakfast, " + who + ".";
+class Bacon {
+  eat() {
+    print "Crunch crunch crunch!";
+    newline;
+    print message;
+    newline;
   }
 }
 
-print Breakfast();
+Bacon().eat();

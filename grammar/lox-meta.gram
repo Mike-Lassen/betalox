@@ -64,7 +64,13 @@ Rule
 
 <Expression> ::| <Assignment> | <Evaluation> ;
 
-<Assignment> ::= <Variable> '=' <Expression> ;
+<Assignment> ::= <Target> '=' <Expression> ;
+
+<Target> ::| <Simple> | <Remote> ;
+
+<Remote> ::= <Expression:Unary> <Property> ;
+
+<Simple> ::= <Variable> ;
 
 <Name> ::= <NameDecl> ;
 
@@ -96,7 +102,13 @@ Rule
 <Negation> ::= '-' <Evaluation:Unary> ;
 <BoolNegation> ::= '!' <Evaluation:Unary> ;
 
-<Call> ::= <Callee:Unary> '(' <Arguments> ')' ;
+<Call> ::= <Expression:Unary> <Access> ;
+
+<Access> ::| <Method> | <Property> ;
+
+<Method> ::= '(' <Arguments> ')' ;
+
+<Property> ::= '.' <NameAppl> ;
 
 <Arguments> ::* <Expression> ',' ;
 

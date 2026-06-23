@@ -192,8 +192,23 @@ do (if E.symbol
     if);
 
 -- do_Assignment_body: DoPart --
-do A.getVariable -> do_Variable;
+do A.getTarget -> do_Target;
    A.getExpression -> do_Expression;
+
+-- do_Target_body: DoPart --
+do (if T.symbol
+    // lox.Simple then
+       T[] -> do_Simple;
+    // lox.Remote then
+       T[] -> do_Remote;
+    if);
+
+-- do_Remote_body: DoPart --
+do R.getExpression -> do_Unary;
+   R.getProperty -> do_Property;
+
+-- do_Simple_body: DoPart --
+do S.getVariable -> do_Variable;
 
 -- do_Name_body: DoPart --
 do N.getNameDecl -> do_NameDecl;
@@ -585,8 +600,22 @@ do N.getEvaluation -> do_Unary;
 do B.getEvaluation -> do_Unary;
 
 -- do_Call_body: DoPart --
-do C.getCallee -> do_Unary;
-   C.getArguments -> do_Arguments;
+do C.getExpression -> do_Unary;
+   C.getAccess -> do_Access;
+
+-- do_Access_body: DoPart --
+do (if A.symbol
+    // lox.Method then
+       A[] -> do_Method;
+    // lox.Property then
+       A[] -> do_Property;
+    if);
+
+-- do_Method_body: DoPart --
+do M.getArguments -> do_Arguments;
+
+-- do_Property_body: DoPart --
+do P.getNameAppl -> do_NameAppl;
 
 -- do_Arguments_body: DoPart --
 do A.newscan

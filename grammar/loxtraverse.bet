@@ -133,6 +133,21 @@ lox_traverse:
        enter A[]
        <<SLOT do_Assignment_body: DoPart>>
        #);
+     do_Target: (* alternation *)
+       (# T: ^lox.Target
+       enter T[]
+       <<SLOT do_Target_body: DoPart>>
+       #);
+     do_Remote: (* cons *)
+       (# R: ^lox.Remote
+       enter R[]
+       <<SLOT do_Remote_body: DoPart>>
+       #);
+     do_Simple: (* cons *)
+       (# S: ^lox.Simple
+       enter S[]
+       <<SLOT do_Simple_body: DoPart>>
+       #);
      do_Name: (* cons *)
        (# N: ^lox.Name
        enter N[]
@@ -247,6 +262,21 @@ lox_traverse:
        (# C: ^lox.Call
        enter C[]
        <<SLOT do_Call_body: DoPart>>
+       #);
+     do_Access: (* alternation *)
+       (# A: ^lox.Access
+       enter A[]
+       <<SLOT do_Access_body: DoPart>>
+       #);
+     do_Method: (* cons *)
+       (# M: ^lox.Method
+       enter M[]
+       <<SLOT do_Method_body: DoPart>>
+       #);
+     do_Property: (* cons *)
+       (# P: ^lox.Property
+       enter P[]
+       <<SLOT do_Property_body: DoPart>>
        #);
      do_Arguments: (* list *)
        (# A: ^lox.Arguments

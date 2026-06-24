@@ -167,6 +167,8 @@ do (if E.symbol
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        E[] -> do_Variable;
+    // lox.ThisExp then
+       E[] -> do_ThisExp;
     // lox.Number then
        E[] -> do_Number;
     // lox.Text then
@@ -254,6 +256,8 @@ do (if E.symbol
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        E[] -> do_Variable;
+    // lox.ThisExp then
+       E[] -> do_ThisExp;
     // lox.Number then
        E[] -> do_Number;
     // lox.Text then
@@ -319,6 +323,8 @@ do (if E.symbol
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        E[] -> do_Variable;
+    // lox.ThisExp then
+       E[] -> do_ThisExp;
     // lox.Number then
        E[] -> do_Number;
     // lox.Text then
@@ -380,6 +386,8 @@ do (if E.symbol
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        E[] -> do_Variable;
+    // lox.ThisExp then
+       E[] -> do_ThisExp;
     // lox.Number then
        E[] -> do_Number;
     // lox.Text then
@@ -439,6 +447,8 @@ do (if C.symbol
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        C[] -> do_Variable;
+    // lox.ThisExp then
+       C[] -> do_ThisExp;
     // lox.Number then
        C[] -> do_Number;
     // lox.Text then
@@ -496,6 +506,8 @@ do (if T.symbol
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        T[] -> do_Variable;
+    // lox.ThisExp then
+       T[] -> do_ThisExp;
     // lox.Number then
        T[] -> do_Number;
     // lox.Text then
@@ -539,6 +551,8 @@ do (if F.symbol
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        F[] -> do_Variable;
+    // lox.ThisExp then
+       F[] -> do_ThisExp;
     // lox.Number then
        F[] -> do_Number;
     // lox.Text then
@@ -576,6 +590,8 @@ do (if U.symbol
        (* sub-alternation <Primary>: *)
     // lox.Variable then
        U[] -> do_Variable;
+    // lox.ThisExp then
+       U[] -> do_ThisExp;
     // lox.Number then
        U[] -> do_Number;
     // lox.Text then
@@ -627,6 +643,8 @@ do A.newscan
 do (if P.symbol
     // lox.Variable then
        P[] -> do_Variable;
+    // lox.ThisExp then
+       P[] -> do_ThisExp;
     // lox.Number then
        P[] -> do_Number;
     // lox.Text then
@@ -661,6 +679,9 @@ do
 do 
 
 -- do_NilExp_body: DoPart --
+do 
+
+-- do_ThisExp_body: DoPart --
 do 
 
 -- do_Variable_body: DoPart --

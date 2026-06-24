@@ -1,0 +1,25 @@
+ORIGIN 'grammar/loxcfl';
+
+-- NameAttributes: Attributes --
+
+getText:
+  (# theNameDecl: ^NameDecl;
+  do getNameDecl -> theNameDecl[]
+  exit theNameDecl.getText
+  #);
+
+-- PropertyAttributes: Attributes --
+
+getText:
+  (# theNameAppl: ^NameAppl;
+  do getNameAppl -> theNameAppl[];
+  exit theNameAppl.getText
+  #);
+
+-- VariableAttributes: Attributes --
+
+getText:
+  (# theNameAppl: ^NameAppl;
+  do getNameAppl -> theNameAppl[];
+  exit theNameAppl.getText
+  #);

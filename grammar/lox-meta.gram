@@ -113,6 +113,7 @@ Rule
 <Arguments> ::* <Expression> ',' ;
 
 <Primary>       ::| <Variable>
+                  | <ThisExp>
                   | <Number>
                   | <Text>
                   | <BoolExp>
@@ -125,6 +126,7 @@ Rule
 <TrueExp>  ::= 'true' ;
 <FalseExp> ::= 'false' ;
 <NilExp>   ::= 'nil' ;
+<ThisExp>  ::= 'this' ;
 
 <Variable>      ::= <NameAppl> ;
 <Number>        ::= <Const> ;
@@ -133,8 +135,11 @@ Rule
 Attribute
 
 <Expression>: 0
+<Variable>: 0
+<Name>: 0
+<Property>: 0
+
 
 <Variable>:
-(# level: integer;
-   declaration: Name
+(# distance: integer
 #)

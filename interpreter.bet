@@ -1,4 +1,5 @@
 ORIGIN '~beta/newmps/astlevel';
+INCLUDE 'loxsematt';
 INCLUDE 'grammar/loxcfl';
 INCLUDE 'grammar/loxgram';
 INCLUDE '~beta/basiclib/numberio';
@@ -184,11 +185,9 @@ Interpreter: AstInterface
             do &Environment[]->env[];
                closure[]->env.init;
                parameters.newScan
-                 (# decl: ^NameDecl;
-                    val: ^LoxValue;
-                 do current.getNameDecl->decl[];
-                    arguments.removeFront->val[];
-                    (decl.getText, val[])->env.define;
+                 (# val: ^LoxValue;
+                 do arguments.removeFront->val[];
+                    (current.getText, val[])->env.define;
                  #);
                executing:
                  (# 
@@ -340,24 +339,21 @@ Interpreter: AstInterface
                value: ^LoxValue;
             enter name[]
             do name[]->values.lookup->value[];
-               (if (value[] = none) and (enclosing[] <> none) then
-                   name[]->enclosing.get->value[];
-               if)
             exit value[]
             #);
           getAt:
             (# name: ^Text;
-               level: @integer;
+               distance: @integer;
                value: ^LoxValue;
                current: ^Environment;
-            enter (name[], level)
+            enter (name[], distance)
             do THIS(Environment)[] -> current[];
-               (for level repeat
+               (for distance repeat
                    current.enclosing[] -> current[];
                for);
-               name[] -> current.values.lookup -> value[];
+               name[] -> current.get -> value[];
             exit value[]
-            #);  
+            #);
           assign:
             (# name: ^Text;
                value: ^LoxValue;
@@ -474,33 +470,16 @@ Interpreter: AstInterface
             enter (name[], decl[])
             do (name[], decl[])->declarations.associate;
             #);
-          resolve:
-            (# level: @integer;
-               var: ^loxcfl.Variable;
-               nameApl: ^NameAppl;
+          lookup:
+            (# name: ^Text;
                decl: ^Declaration;
-               ok: @boolean;
-            enter (var[], level)
-            do var.getNameAppl->nameApl[];
-               nameApl.getText->declarations.lookup->decl[];
-               (if decl[] <> none then
-                   decl.name[]->var.declaration[];
-                   level->var.level;
-                   true->ok;
-                else
-                   (if enclosing[] <> none then
-                       (var[], level+1)->enclosing.resolve->ok;
-                    else
-                       false->ok;
-                   if)
-               if)
-            exit ok
+            enter name[]
+            do name[] -> declarations.lookup -> decl[];
+            exit decl[]
             #);
        #);
      Declaration:
-       (# name: ^loxcfl.Name;
-          defined: @boolean;
-          native: @boolean;
+       (# defined: @boolean;
        #);
      Resolver:
        (# error:<
@@ -512,22 +491,40 @@ Interpreter: AstInterface
                (failureTrace, message[]) -> stop;
             #);
           declare:
-            (# name: ^loxcfl.Name;
+            (# name: ^Text;
                decl: ^Declaration;
-               nameDcl: ^NameDecl;
             enter name[]
-            do &Declaration[]->decl[];
-               name[]->decl.name[];
-               name.getNameDecl->nameDcl[];
-               (nameDcl.getText, decl[])->top.declare;
+            do (if top[] <> NONE then
+                   &Declaration[]->decl[];
+                   (name[], decl[])->top.declare;
+               if);
             exit decl[]
             #);
+          define:
+            (# name: ^Text;
+            enter name[]
+            do (if top[] <> NONE then
+                   true -> (name[]->declare).defined;
+               if)
+            #);  
           resolveLocal:
-            (# var: ^loxcfl.Variable;
-               ok: @boolean;
-            enter var[]
-            do (var[], 0)->top.resolve->ok;
-            exit ok
+            (# name: ^Text;
+               current: ^Scope;
+               distance: @integer;
+            enter name[]
+            do top[] -> current[];
+               0 -> distance;
+               loop: (if current[] <> NONE then
+                         (if (name[] -> current.lookup) = NONE then
+                             distance + 1 -> distance;
+                             current.enclosing[] -> current[];
+                             restart loop;
+                         if)
+                     if);
+                (if current[] = NONE then
+                    -1 -> distance;
+                if);
+            exit distance
             #);
           top: ^Scope;
           functionTypes: @
@@ -578,10 +575,14 @@ Interpreter: AstInterface
                                 do N.getExpression -> resolveExpression;
                                 #);
                            #);
-                      do N.getName->declare->decl[];
+                         name: ^loxcfl.Name;  
+                      do N.getName -> name[];
+                         name.getText->declare->decl[];
                          N.getInitializerOpt->initializer[];
                          resolver[] -> initializer.accept;
-                         true->decl.defined;
+                         (if decl[] <> NONE then
+                              true->decl.defined;
+                         if);
                       #);
                     visit_ExprStmt:: 
                       (# 
@@ -596,10 +597,10 @@ Interpreter: AstInterface
                       do (N.getFunction, functionTypes.function)->resolveFunction;
                       #);
                     visit_ClassDecl::
-                      (# decl: ^Declaration;
-                         functions: ^loxcfl.Functions;
-                      do N.getName->declare->decl[];
-                         true -> decl.defined;
+                      (# functions: ^loxcfl.Functions;
+                         name: ^loxcfl.Name;
+                      do N.getName->name[];
+                         name.getText -> define;
                          N.getFunctions -> functions[];
                          functions.newScan
                            (#
@@ -641,15 +642,17 @@ Interpreter: AstInterface
                parameters: ^loxcfl.Parameters;
                type: @integer;
                enclosingType: @integer;
+               name: ^loxcfl.Name;
             enter (function[], type)
             do currentFunction -> enclosingType;
                type -> currentFunction;
-               true->(function.getName->declare).defined;
+               function.getName -> name[];
+               name.getText->define;
                beginScope;
                function.getParameters->parameters[];
                parameters.newScan
                  (# 
-                 do true->(current[]->declare).defined;
+                 do current.getText->define;
                  #);
                function.getBlock->resolveStatement;
                endScope;
@@ -676,10 +679,9 @@ Interpreter: AstInterface
                     visit_Assignment:: 
                       (# targetVisitor: @loxcfl.treeLevelVisitor
                            (# visit_Simple::
-                                (#
-                                do (if not (N.getVariable->resolveLocal) then
-                                      (N[], 'name not found')->error;
-                                  if);
+                                (# var: ^loxcfl.Variable;
+                                do N.getVariable -> var[];
+                                   var.getText -> resolveLocal -> var.distance;
                                 #);
                               visit_Remote::
                                 (#
@@ -691,9 +693,7 @@ Interpreter: AstInterface
                       #);
                     visit_Variable:: 
                       (# 
-                      do (if not (N[]->resolveLocal) then
-                             (N[], 'name not found')->error;
-                         if);
+                      do N.getText ->  resolveLocal -> N.distance;
                       #);
                     visit_Addition:: 
                       (# 
@@ -771,7 +771,6 @@ Interpreter: AstInterface
             enter expression[]
             do visitor[]->expression.accept;
             #);
-       enter top[]
        do functionTypes.main -> currentFunction;
           INNER
        #);
@@ -862,7 +861,6 @@ Interpreter: AstInterface
                       #);
                     visit_VarDecl:: 
                       (# name: ^loxcfl.Name;
-                         decl: ^NameDecl;
                          initializer: ^AST;
                          initialValue: ^LoxValue;
                          evaluator: @loxcfl.treeLevelVisitor
@@ -872,40 +870,35 @@ Interpreter: AstInterface
                                 #);
                            #);
                       do N.getName->name[];
-                         name.getNameDecl->decl[];
                          LoxNil[]->initialValue[];
                          N.getInitializerOpt->initializer[];
                          evaluator[]->initializer.accept;
-                         (if not ((decl.getText, initialValue[])->env.define) then
+                         (if not ((name.getText, initialValue[])->env.define) then
                              (N[], 'variable already defined')->runtimeError;
                          if);
                       #);
                     visit_FunDecl:: 
                       (# function: ^loxcfl.Function;
                          name: ^loxcfl.Name;
-                         decl: ^NameDecl;
                          theLoxFunction: ^LoxFunction;
                       do N.getFunction->function[];
                          function.getName->name[];
-                         name.getNameDecl->decl[];
                          &LoxFunction[]->theLoxFunction[];
-                         decl.getText->theLoxFunction.name[];
+                         name.getText->theLoxFunction.name[];
                          env[]->theLoxFunction.closure[];
                          function.getParameters->theLoxFunction.parameters[];
                          function.getBlock->theLoxFunction.block[];
-                         (decl.getText, theLoxFunction[])->env.define;
+                         (name.getText, theLoxFunction[])->env.define;
                       #);
                     visit_ClassDecl::
                       (# name: ^loxcfl.Name;
-                         decl: ^NameDecl;
                          value: ^LoxClass;
                          functions: ^loxcfl.Functions;
                          methods: ^FunctionDictionary;
                       do N.getName->name[];
-                         name.getNameDecl->decl[];
                          &LoxClass[] -> value[];
-                         decl.getText -> value.name[];
-                         (if not ((decl.getText, value[])->env.define) then
+                         name.getText -> value.name[];
+                         (if not ((name.getText, value[])->env.define) then
                              (N[], 'name already defined')->runtimeError;
                          if);
                          N.getFunctions -> functions[];
@@ -913,16 +906,14 @@ Interpreter: AstInterface
                          methods.init;
                          functions.newScan
                            (# name: ^loxcfl.Name;
-                              decl: ^NameDecl;
                               method: ^LoxFunction;
                            do current.getName->name[];
-                              name.getNameDecl->decl[];
                               &LoxFunction[]->method[];
-                              decl.getText->method.name[];
+                              name.getText->method.name[];
                               env[]->method.closure[];
                               current.getParameters->method.parameters[];
                               current.getBlock->method.block[];
-                              (decl.getText, method[]) -> methods.associate;
+                              (name.getText, method[]) -> methods.associate;
                            #);
                           methods[] -> value.methods[];
                       #);
@@ -1116,11 +1107,9 @@ Interpreter: AstInterface
                                 #);
                               visit_Property::
                                 (# instance: ^LoxInstance;
-                                   nameApl: ^NameAppl;
                                 do (if value.isInstance then
                                        value.asInstance -> instance[];
-                                       N.getNameAppl -> nameApl[];
-                                       nameApl.getText -> instance.get -> result[];
+                                       N.getText -> instance.get -> result[];
                                    if)
                                 #);  
                            #);
@@ -1131,25 +1120,21 @@ Interpreter: AstInterface
                       #);
                     visit_Assignment:: 
                       (# name: ^loxcfl.Variable;
-                         appl: ^NameAppl;
                          targetVisitor: @loxcfl.treeLevelVisitor
                            (# visit_Simple::
                                 (#
                                 do  N.getVariable->name[];
-                                    name.getNameAppl->appl[];
-                                    (if not ((appl.getText, result[])->env.assign) then
+                                    (if not ((name.getText, result[])->env.assign) then
                                         (N[], 'variable does not exist')->runtimeError;
                                     if);
                                 #);
                               visit_Remote::
                                 (# value: ^LoxValue;
                                    property: ^loxcfl.Property;
-                                   nameApl: ^NameAppl;
                                 do N.getExpression->Evaluate->value[]; 
                                    (if value.isInstance then
                                        N.getProperty -> property[];
-                                       property.getNameAppl -> nameApl[];
-                                       (nameApl.getText, result[]) -> (value.asInstance).assign;
+                                       (property.getText, result[]) -> (value.asInstance).assign;
                                    else
                                       (N[], 'object required') -> runtimeError;
                                    if)
@@ -1159,9 +1144,12 @@ Interpreter: AstInterface
                          targetVisitor[] -> (N.getTarget).accept;
                       #);
                     visit_Variable:: 
-                      (# appl: ^NameAppl;
-                      do N.getNameAppl->appl[];
-                         (appl.getText, N.level)->env.getAt->result[];
+                      (# 
+                      do (if N.distance = -1 then
+                             N.getText -> globals.get -> result[];
+                          else
+                             (N.getText, N.distance)->env.getAt->result[];
+                         if);
                          (if result[] = none then
                              (N[], 'variable does not exist')->runtimeError;
                          if);
@@ -1307,13 +1295,8 @@ Interpreter: AstInterface
        #);
      InterpretProgram: Interpret
        (# program: ^loxcfl.Program;
-          globalScope: @Scope;
-          clockDecl: @Declaration;
        enter program[]
-       do true->clockDecl.defined;
-          true->clockDecl.native;
-          ('clock', clockDecl[])->globalScope.declare;
-          (globalScope[], program[])->ProgramResolver
+       do program[]->ProgramResolver
             (# error::
                  (#
                  do (node[], message[]) -> semanticError;

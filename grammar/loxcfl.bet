@@ -166,6 +166,7 @@ exit 15 #);
           putNameDecl: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Name)[] -> V.visit_Name #);
+          <<SLOT NameAttributes:attributes>>; 
        exit 28
        #);
      Evaluation: Expression
@@ -335,6 +336,7 @@ exit 15 #);
           putNameAppl: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Property)[] -> V.visit_Property #);
+          <<SLOT PropertyAttributes:attributes>>; 
        exit 53
        #);
      Arguments: list
@@ -366,40 +368,42 @@ exit 59 #);
        (#           astVisitor:: treeLevelVisitor;
           accept::< (# do this(NilExp)[] -> V.visit_NilExp #);
 exit 60 #);
+     ThisExp: Primary
+       (#           astVisitor:: treeLevelVisitor;
+          accept::< (# do this(ThisExp)[] -> V.visit_ThisExp #);
+exit 61 #);
      Variable: Primary
        (# getNameAppl: getson1(# #);
           putNameAppl: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Variable)[] -> V.visit_Variable #);
-          level: @integer;
-          declaration: ^Name;
+          distance: @integer;
           pack::<
             (#
-            do level -> putValue;
-               declaration[] -> putAstRef;
+            do distance -> putValue;
                INNER;
             #);
           unPack::<
             (#
-            do getValue -> level;
-               getAstRef -> declaration[];
+            do getValue -> distance;
                INNER;
             #);
-       exit 61
+          <<SLOT VariableAttributes:attributes>>; 
+       exit 62
        #);
      Number: Primary
        (# getConst: getson1(# #);
           putConst: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Number)[] -> V.visit_Number #);
-       exit 62
+       exit 63
        #);
      Text: Primary
        (# getString: getson1(# #);
           putString: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Text)[] -> V.visit_Text #);
-       exit 63
+       exit 64
        #);
 
      grammarIdentification::<
@@ -409,7 +413,7 @@ exit 60 #);
      suffix::<
        (# do '.lox' -> theSuffix #);
      maxproductions::<
-       (# do 63 -> value #);
+       (# do 64 -> value #);
 
      init::<
        (# <<SLOT InitBody:dopart>> #);
@@ -611,6 +615,11 @@ exit 60 #);
             enter N[]
             do INNER
             #);
+          visit_ThisExp:<
+            (# N: ^lox.ThisExp
+            enter N[]
+            do INNER
+            #);
           visit_Variable:<
             (# N: ^lox.Variable
             enter N[]
@@ -750,9 +759,11 @@ do
    FalseExp## -> genRefArray[59]##;
    1 -> kindArray[60]; 0 -> roomArray[60]; 0 -> sonArray[60]; 
    NilExp## -> genRefArray[60]##;
-   1 -> kindArray[61]; 0 -> roomArray[61]; 1 -> sonArray[61]; 
-   Variable## -> genRefArray[61]##;
+   1 -> kindArray[61]; 0 -> roomArray[61]; 0 -> sonArray[61]; 
+   ThisExp## -> genRefArray[61]##;
    1 -> kindArray[62]; 0 -> roomArray[62]; 1 -> sonArray[62]; 
-   Number## -> genRefArray[62]##;
+   Variable## -> genRefArray[62]##;
    1 -> kindArray[63]; 0 -> roomArray[63]; 1 -> sonArray[63]; 
-   Text## -> genRefArray[63]##;
+   Number## -> genRefArray[63]##;
+   1 -> kindArray[64]; 0 -> roomArray[64]; 1 -> sonArray[64]; 
+   Text## -> genRefArray[64]##;

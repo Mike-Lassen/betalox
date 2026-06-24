@@ -313,6 +313,11 @@ lox_traverse:
        enter N[]
        <<SLOT do_NilExp_body: DoPart>>
        #);
+     do_ThisExp: (* cons *)
+       (# T: ^lox.ThisExp
+       enter T[]
+       <<SLOT do_ThisExp_body: DoPart>>
+       #);
      do_Variable: (* cons *)
        (# V: ^lox.Variable
        enter V[]

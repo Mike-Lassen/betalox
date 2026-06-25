@@ -371,6 +371,17 @@ exit 60 #);
      ThisExp: Primary
        (#           astVisitor:: treeLevelVisitor;
           accept::< (# do this(ThisExp)[] -> V.visit_ThisExp #);
+          distance: @integer;
+          pack::<
+            (#
+            do distance -> putValue;
+               INNER;
+            #);
+          unPack::<
+            (#
+            do getValue -> distance;
+               INNER;
+            #);
 exit 61 #);
      Variable: Primary
        (# getNameAppl: getson1(# #);

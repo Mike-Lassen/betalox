@@ -1,18 +1,15 @@
 -- program : Program : lox --
 
 
-var message = "Breakfast!";
+class Thing {
+  getCallback() {
+    fun localFunction() {
+      print this;
+    }
 
-print message;
-
-
-class Bacon {
-  eat() {
-    print "Crunch crunch crunch!";
-    newline;
-    print message;
-    newline;
+    return localFunction;
   }
 }
 
-Bacon().eat();
+var callback = Thing().getCallback();
+callback();

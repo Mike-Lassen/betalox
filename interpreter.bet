@@ -176,6 +176,22 @@ Interpreter: AstInterface
           closure: ^Environment;
           parameters: ^loxcfl.Parameters;
           block: ^loxcfl.Block;
+          bind:
+            (# instance: ^LoxInstance;
+               function: ^LoxFunction;
+               env: ^Environment;
+            enter instance[]
+            do &Environment[] -> env[];
+               closure[] -> env.init;
+               ('this', instance[]) -> env.define;
+               &LoxFunction[] -> function[];
+               env[] -> function.closure[];
+               'bound ' -> function.name[];
+               name[] -> function.name.puttext;
+               parameters[] -> function.parameters[];
+               block[] -> function.block[];
+            exit function[]   
+            #);
           arity:: 
             (# 
             do parameters.noOfSons->value
@@ -258,10 +274,14 @@ Interpreter: AstInterface
           get:
             (# name: ^Text;
                value: ^LoxValue;
+               function: ^LoxFunction;
             enter name[]   
             do name[] -> fields.lookup -> value[];
                (if value[] = NONE then
-                   name[] -> class.methods.lookup -> value[];
+                   name[] -> class.methods.lookup -> function[];
+                   (if function[] <> NONE then
+                       THIS(LoxInstance)[] -> function.bind -> value[];
+                   if);
                if);
             exit value[]
             #);
@@ -601,11 +621,14 @@ Interpreter: AstInterface
                          name: ^loxcfl.Name;
                       do N.getName->name[];
                          name.getText -> define;
+                         beginScope;
+                         'this' -> define;
                          N.getFunctions -> functions[];
                          functions.newScan
                            (#
                            do (current[], functionTypes.method) -> resolveFunction;
                            #);
+                         endScope;
                       #);
                     visit_IfStmt:: 
                       (# resolver: @loxcfl.treeLevelVisitor
@@ -695,6 +718,10 @@ Interpreter: AstInterface
                       (# 
                       do N.getText ->  resolveLocal -> N.distance;
                       #);
+                    visit_ThisExp::
+                      (#
+                      do 'this' ->  resolveLocal -> N.distance;
+                      #);  
                     visit_Addition:: 
                       (# 
                       do N.getLeftSide->resolveExpression;
@@ -1154,6 +1181,10 @@ Interpreter: AstInterface
                              (N[], 'variable does not exist')->runtimeError;
                          if);
                       #);
+                    visit_ThisExp::
+                      (#
+                      do ('this', N.distance) -> env.getAt -> result[];
+                      #);  
                     visit_Number:: 
                       (# input: ^Text;
                          theNumber: @LoxNumber;

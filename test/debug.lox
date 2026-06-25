@@ -4,7 +4,7 @@
 class Thing {
   getCallback() {
     fun localFunction() {
-      print this;
+      print this;newline;
     }
 
     return localFunction;
@@ -13,3 +13,7 @@ class Thing {
 
 var callback = Thing().getCallback();
 callback();
+print Thing().getCallback;
+newline;
+print callback;
+newline;

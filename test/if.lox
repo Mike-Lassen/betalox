@@ -17,3 +17,9 @@ var name = "Mike";
 if (name) {
   print name;
 }
+
+if(true) {
+  var i = 10;
+  print i;
+  newline;
+}

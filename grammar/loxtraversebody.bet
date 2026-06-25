@@ -6,24 +6,42 @@ GrammarPath: (# exit 'C:/beta/betalox/grammar/lox' #);
 BobsTab:     (# exit 'C:/beta/betalox/grammar/lox-parser.btab' #);
 
 -- do_Program_body: DoPart --
-do P.getStatements -> do_Statements;
+do P.getDeclarations -> do_Declarations;
 
--- do_Statements_body: DoPart --
-do S.newscan
+-- do_Declarations_body: DoPart --
+do D.newscan
    (#
-   do current[] -> do_Statement;
+   do current[] -> do_Declaration;
    #);
+
+-- do_Declaration_body: DoPart --
+do (if D.symbol
+    // lox.VarDecl then
+       D[] -> do_VarDecl;
+    // lox.FunDecl then
+       D[] -> do_FunDecl;
+    // lox.ClassDecl then
+       D[] -> do_ClassDecl;
+       (* sub-alternation <Statement>: *)
+    // lox.ExprStmt then
+       D[] -> do_ExprStmt;
+    // lox.PrintStmt then
+       D[] -> do_PrintStmt;
+    // lox.NewlineStmt then
+       D[] -> do_NewlineStmt;
+    // lox.Block then
+       D[] -> do_Block;
+    // lox.IfStmt then
+       D[] -> do_IfStmt;
+    // lox.WhileStmt then
+       D[] -> do_WhileStmt;
+    // lox.ReturnStmt then
+       D[] -> do_ReturnStmt;
+       (* End sub-alternation <Statement> *)
+    if);
 
 -- do_Statement_body: DoPart --
 do (if S.symbol
-       (* sub-alternation <Declaration>: *)
-    // lox.VarDecl then
-       S[] -> do_VarDecl;
-    // lox.FunDecl then
-       S[] -> do_FunDecl;
-    // lox.ClassDecl then
-       S[] -> do_ClassDecl;
-       (* End sub-alternation <Declaration> *)
     // lox.ExprStmt then
        S[] -> do_ExprStmt;
     // lox.PrintStmt then
@@ -38,16 +56,6 @@ do (if S.symbol
        S[] -> do_WhileStmt;
     // lox.ReturnStmt then
        S[] -> do_ReturnStmt;
-    if);
-
--- do_Declaration_body: DoPart --
-do (if D.symbol
-    // lox.VarDecl then
-       D[] -> do_VarDecl;
-    // lox.FunDecl then
-       D[] -> do_FunDecl;
-    // lox.ClassDecl then
-       D[] -> do_ClassDecl;
     if);
 
 -- do_VarDecl_body: DoPart --
@@ -96,7 +104,7 @@ do P.getExpression -> do_Expression;
 do 
 
 -- do_Block_body: DoPart --
-do B.getStatements -> do_Statements;
+do B.getDeclarations -> do_Declarations;
 
 -- do_IfStmt_body: DoPart --
 do I.getCondition -> do_Expression;

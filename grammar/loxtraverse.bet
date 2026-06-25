@@ -18,20 +18,20 @@ lox_traverse:
        enter P[]
        <<SLOT do_Program_body: DoPart>>
        #);
-     do_Statements: (* list *)
-       (# S: ^lox.Statements
-       enter S[]
-       <<SLOT do_Statements_body: DoPart>>
-       #);
-     do_Statement: (* alternation *)
-       (# S: ^lox.Statement
-       enter S[]
-       <<SLOT do_Statement_body: DoPart>>
+     do_Declarations: (* list *)
+       (# D: ^lox.Declarations
+       enter D[]
+       <<SLOT do_Declarations_body: DoPart>>
        #);
      do_Declaration: (* alternation *)
        (# D: ^lox.Declaration
        enter D[]
        <<SLOT do_Declaration_body: DoPart>>
+       #);
+     do_Statement: (* alternation *)
+       (# S: ^lox.Statement
+       enter S[]
+       <<SLOT do_Statement_body: DoPart>>
        #);
      do_VarDecl: (* cons *)
        (# V: ^lox.VarDecl

@@ -10,12 +10,17 @@ Option
 
 Rule
 
-<Program> ::= <Statements> ;
+<Program> ::= <Declarations> ;
 
-<Statements> ::* <Statement> ;
+<Declarations> ::* <Declaration> ;
 
-<Statement> ::| <Declaration> 
-              | <ExprStmt> 
+<Declaration> ::| <VarDecl> 
+                | <FunDecl> 
+                | <ClassDecl> 
+                | <Statement>
+                ;
+
+<Statement> ::| <ExprStmt> 
               | <PrintStmt> 
               | <NewlineStmt> 
               | <Block> 
@@ -24,7 +29,7 @@ Rule
               | <ReturnStmt>
               ;
 
-<Declaration> ::| <VarDecl> | <FunDecl> | <ClassDecl>;
+
 
 <VarDecl> ::= 'var' <Name> <InitializerOpt> ';' ;
 
@@ -48,7 +53,7 @@ Rule
 
 <NewlineStmt> ::= 'newline' ';';
 
-<Block> ::= '{' <Statements> '}' ;
+<Block> ::= '{' <Declarations> '}' ;
 
 <IfStmt> ::= 'if' '(' <Condition:Expression> ')' <Statement> <ElsePartOpt>;
 

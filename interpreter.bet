@@ -477,7 +477,7 @@ Interpreter: AstInterface
      Scope:
        (# enclosing: ^Scope;
           declarations: @TextKeyDictionary
-            (# element:: Declaration
+            (# element:: NameDeclaration
             #);
           init:
             (# 
@@ -486,19 +486,19 @@ Interpreter: AstInterface
             #);
           declare:
             (# name: ^Text;
-               decl: ^Declaration;
+               decl: ^NameDeclaration;
             enter (name[], decl[])
             do (name[], decl[])->declarations.associate;
             #);
           lookup:
             (# name: ^Text;
-               decl: ^Declaration;
+               decl: ^NameDeclaration;
             enter name[]
             do name[] -> declarations.lookup -> decl[];
             exit decl[]
             #);
        #);
-     Declaration:
+     NameDeclaration:
        (# defined: @boolean;
        #);
      Resolver:
@@ -512,10 +512,10 @@ Interpreter: AstInterface
             #);
           declare:
             (# name: ^Text;
-               decl: ^Declaration;
+               decl: ^NameDeclaration;
             enter name[]
             do (if top[] <> NONE then
-                   &Declaration[]->decl[];
+                   &NameDeclaration[]->decl[];
                    (name[], decl[])->top.declare;
                if);
             exit decl[]
@@ -567,27 +567,27 @@ Interpreter: AstInterface
           resolveProgram:
             (# program: ^loxcfl.Program;
             enter program[]
-            do program.getStatements->resolveStatements;
+            do program.getDeclarations->resolveStatements;
             #);
           resolveStatements:
-            (# statements: ^loxcfl.Statements;
-            enter statements[]
-            do statements.newScan
+            (# declarations: ^loxcfl.Declarations;
+            enter declarations[]
+            do declarations.newScan
                  (# 
-                 do current[]->resolveStatement;
+                 do current[]->resolveDeclaration;
                  #);
             #);
-          resolveStatement:
-            (# statement: ^loxcfl.Statement;
+          resolveDeclaration:
+            (# declaration: ^loxcfl.Declaration;
                visitor: @loxcfl.treeLevelVisitor
                  (# visit_Block:: 
                       (# 
                       do beginScope;
-                         N.getStatements->resolveStatements;
+                         N.getDeclarations->resolveStatements;
                          endScope;
                       #);
                     visit_VarDecl:: 
-                      (# decl: ^Declaration;
+                      (# decl: ^NameDeclaration;
                          initializer: ^AST;
                          resolver: @loxcfl.treeLevelVisitor
                            (# visit_Initializer::
@@ -613,7 +613,7 @@ Interpreter: AstInterface
                       do N.getExpression->resolveExpression;
                       #);
                     visit_FunDecl:: 
-                      (# decl: ^Declaration;
+                      (# 
                       do (N.getFunction, functionTypes.function)->resolveFunction;
                       #);
                     visit_ClassDecl::
@@ -634,17 +634,17 @@ Interpreter: AstInterface
                       (# resolver: @loxcfl.treeLevelVisitor
                            (# visit_ElsePart:: 
                                 (# 
-                                do N.getStatement->resolveStatement;
+                                do N.getStatement->resolveDeclaration;
                                 #);
                            #);
                       do N.getCondition->resolveExpression;
-                         N.getStatement->resolveStatement;
+                         N.getStatement->resolveDeclaration;
                          resolver[]->(N.getElsePartOpt).accept;
                       #);
                     visit_WhileStmt:: 
                       (# 
                       do N.getCondition->resolveExpression;
-                         N.getStatement->resolveStatement;
+                         N.getStatement->resolveDeclaration;
                       #);
                     visit_ReturnStmt:: 
                       (# expression: ^AST;
@@ -657,8 +657,8 @@ Interpreter: AstInterface
                          if)
                       #);
                  #);
-            enter statement[]
-            do visitor[]->statement.accept;
+            enter declaration[]
+            do visitor[]->declaration.accept;
             #);
           resolveFunction:
             (# function: ^loxcfl.Function;
@@ -677,7 +677,7 @@ Interpreter: AstInterface
                  (# 
                  do current.getText->define;
                  #);
-               function.getBlock->resolveStatement;
+               function.getBlock->resolveDeclaration;
                endScope;
                enclosingType -> currentFunction;
             #);
@@ -862,16 +862,16 @@ Interpreter: AstInterface
                    (node[], 'evaluated to zero')->runtimeError;
                if);
             #);
-          ExecuteStatements:
-            (# statements: ^loxcfl.Statements;
-            enter statements[]
-            do statements.newScan
+          ExecuteDeclarations:
+            (# declarations: ^loxcfl.Declarations;
+            enter declarations[]
+            do declarations.newScan
                  (# 
-                 do current[]->ExecuteStatement;
+                 do current[]->ExecuteDeclaration;
                  #);
             #);
-          ExecuteStatement:
-            (# statement: ^loxcfl.Statement;
+          ExecuteDeclaration:
+            (# declaration: ^loxcfl.Declaration;
                visitor: @loxcfl.treeLevelVisitor
                  (# visit_ExprStmt:: 
                       (# result: ^LoxValue;
@@ -947,7 +947,7 @@ Interpreter: AstInterface
                     visit_Block:: 
                       (# 
                       do pushEnv;
-                         N.getStatements->ExecuteStatements;
+                         N.getDeclarations->ExecuteDeclarations;
                          popEnv;
                       #);
                     visit_IfStmt:: 
@@ -955,12 +955,12 @@ Interpreter: AstInterface
                          executor: @loxcfl.treeLevelVisitor
                            (# visit_ElsePart:: 
                                 (# 
-                                do N.getStatement->ExecuteStatement;
+                                do N.getStatement->ExecuteDeclaration;
                                 #);
                            #);
                       do N.getCondition->Evaluate->condition[];
                          (if condition.isTruthy then
-                             N.getStatement->ExecuteStatement;
+                             N.getStatement->ExecuteDeclaration;
                           else
                              executor[]->(N.getElsePartOpt).accept;
                          if);
@@ -971,7 +971,7 @@ Interpreter: AstInterface
                            (# condition: ^LoxValue;
                            do N.getCondition->Evaluate->condition[];
                               (if condition.isTruthy then
-                                  N.getStatement->ExecuteStatement;
+                                  N.getStatement->ExecuteDeclaration;
                                   restart loop;
                               if);
                            #);
@@ -986,8 +986,8 @@ Interpreter: AstInterface
                          if);
                       #);
                  #);
-            enter statement[]
-            do visitor[]->statement.accept;
+            enter declaration[]
+            do visitor[]->declaration.accept;
             #);
           Evaluate:
             (# expression: ^loxcfl.Expression;
@@ -1333,12 +1333,12 @@ Interpreter: AstInterface
                  do (node[], message[]) -> semanticError;
                  #);
             #);
-          program.getStatements->ExecuteStatements;
+          program.getDeclarations->ExecuteDeclarations;
        #);
      InterpretStatement: Interpret
-       (# statement: ^loxcfl.Statement;
-       enter statement[]
-       do statement[]->ExecuteStatement;
+       (# declaration: ^loxcfl.Declaration;
+       enter declaration[]
+       do declaration[]->ExecuteDeclaration;
        #)
   do 'grammar/lox-parser'->loxcfl.init;
      &Environment[]->globals[];

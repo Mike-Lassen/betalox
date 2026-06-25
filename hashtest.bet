@@ -1,0 +1,45 @@
+ORIGIN '~beta/basiclib/betaenv';
+INCLUDE '~beta/basiclib/file';
+INCLUDE '~beta/containers/dictionary';
+INCLUDE '~beta/postwimp/collections/map';
+
+-- lib: attributes --
+
+TextKeyDictionary: dictionary
+       (# key:: Text;
+          hashFunction:: 
+            (# 
+            do k.scanAll
+                 (# 
+                 do 131*value+ch->value;
+                 #);
+               (if value < 0 then
+                   - value->value;
+               if);
+            #);
+          keyEqual:: 
+            (# 
+            do left[]->right.equal->value
+            #);
+       #);
+
+
+-- program: descriptor --
+(# input: @File;
+   word: ^Text;
+   dict: @TextHashMap;
+do  'test/words.txt' -> input.name;
+     input.openRead;
+     'reading..' -> putLine;
+     (for 50000 repeat
+          input.getline -> word[];
+          word.lgth -1 -> word.lgth;
+          (word[], word[]) -> dict.associate;
+     for);
+     'done' -> putLine;
+     'size: ' -> putText;
+     dict.size -> putInt;
+     newLine;
+     'abasement' -> dict.lookup -> putLine;
+     dict.statistics;
+#)

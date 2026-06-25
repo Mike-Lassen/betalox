@@ -4,20 +4,20 @@ ORIGIN '~beta/newmps/astlevel'
 lox: TreeLevel
   (# <<SLOT loxAttributes:attributes>>;
      Program: cons
-       (# getStatements: getson1(# #);
-          putStatements: putson1(# #);
+       (# getDeclarations: getson1(# #);
+          putDeclarations: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Program)[] -> V.visit_Program #);
        exit 1
        #);
-     Statements: list
-       (# soncat::< Statement;
+     Declarations: list
+       (# soncat::< Declaration;
        exit 2
        #);
-     Statement: cons
+     Declaration: cons
        (# 
        #);
-     Declaration: Statement
+     Statement: Declaration
        (# 
        #);
      VarDecl: Declaration
@@ -90,8 +90,8 @@ lox: TreeLevel
           accept::< (# do this(NewlineStmt)[] -> V.visit_NewlineStmt #);
 exit 15 #);
      Block: Statement
-       (# getStatements: getson1(# #);
-          putStatements: putson1(# #);
+       (# getDeclarations: getson1(# #);
+          putDeclarations: putson1(# #);
           astVisitor:: treeLevelVisitor;
           accept::< (# do this(Block)[] -> V.visit_Block #);
        exit 16
@@ -653,7 +653,7 @@ do
    1 -> kindArray[1]; 0 -> roomArray[1]; 1 -> sonArray[1]; 
    Program## -> genRefArray[1]##;
    1 -> kindArray[2]; 0 -> roomArray[2]; 0 -> sonArray[2]; 
-   Statements## -> genRefArray[2]##;
+   Declarations## -> genRefArray[2]##;
    2 -> kindArray[3]; 2 -> roomArray[3]; 0 -> sonArray[3]; 
    unExpanded## -> genRefArray[3]##;
    2 -> kindArray[4]; 2 -> roomArray[4]; 0 -> sonArray[4]; 

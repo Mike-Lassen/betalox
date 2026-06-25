@@ -7,9 +7,9 @@ grammar:
    empty: (# exit -2 #);
 
    Program: (# exit 1 #);
-   Statements: (# exit 2 #);
-   Statement: (# exit 3 #);
-   Declaration: (# exit 4 #);
+   Declarations: (# exit 2 #);
+   Declaration: (# exit 3 #);
+   Statement: (# exit 4 #);
    VarDecl: (# exit 5 #);
    FunDecl: (# exit 6 #);
    ClassDecl: (# exit 7 #);

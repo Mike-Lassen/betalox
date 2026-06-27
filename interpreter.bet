@@ -548,11 +548,16 @@ Interpreter: AstInterface
             #);
           top: ^Scope;
           functionTypes: @
-            (# main: (# exit 1 #);
+            (# void: (# exit 1 #);
                function: (# exit 2 #);
                method: (# exit 3 #);
             #);
           currentFunction: @integer;
+          classTypes: @
+            (# void: (# exit 1 #);
+               class: (# exit 2 #);
+            #);
+          currentClass: @integer;  
 
           beginScope:
             (# new: ^Scope;
@@ -619,7 +624,10 @@ Interpreter: AstInterface
                     visit_ClassDecl::
                       (# functions: ^loxcfl.Functions;
                          name: ^loxcfl.Name;
-                      do N.getName->name[];
+                         enclosingClass: @integer;
+                      do currentClass -> enclosingClass;
+                         classTypes.class -> currentClass;
+                         N.getName->name[];
                          name.getText -> define;
                          beginScope;
                          'this' -> define;
@@ -629,6 +637,7 @@ Interpreter: AstInterface
                            do (current[], functionTypes.method) -> resolveFunction;
                            #);
                          endScope;
+                         enclosingClass -> currentClass;
                       #);
                     visit_IfStmt:: 
                       (# resolver: @loxcfl.treeLevelVisitor
@@ -648,7 +657,7 @@ Interpreter: AstInterface
                       #);
                     visit_ReturnStmt:: 
                       (# expression: ^AST;
-                      do (if currentFunction = functionTypes.main then
+                      do (if currentFunction = functionTypes.void then
                            (N[], 'Cant return from top-level code.') -> error;
                          if);
                          N.getExpressionOpt->expression[];
@@ -720,7 +729,10 @@ Interpreter: AstInterface
                       #);
                     visit_ThisExp::
                       (#
-                      do 'this' ->  resolveLocal -> N.distance;
+                      do (if currentClass = classTypes.void then
+                             (N[], 'Can\'t use this ouside of a class.') -> error;
+                         if);
+                         'this' ->  resolveLocal -> N.distance;
                       #);  
                     visit_Addition:: 
                       (# 
@@ -798,7 +810,8 @@ Interpreter: AstInterface
             enter expression[]
             do visitor[]->expression.accept;
             #);
-       do functionTypes.main -> currentFunction;
+       do functionTypes.void -> currentFunction;
+          classTypes.void -> currentClass;
           INNER
        #);
      ProgramResolver: Resolver

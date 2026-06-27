@@ -1,20 +1,20 @@
 -- program : Program : lox --
 
 
-class Thing {
-  getCallback() {
-    fun localFunction() {
-      print this;newline;
-    }
-
-    return localFunction;
-  }
+class Person {
+   init (name) {
+      this.name = name;
+   }
+   display() {
+      print "My name is " + this.name;
+      newline;
+   }
 }
 
-var callback = Thing().getCallback();
-callback();
-print Thing().getCallback;
-newline;
-print callback;
-newline;
-return;
+var self = Person("Mike");
+
+self.display();
+
+Person("Luxor").display();
+
+self.init("Michael").display();

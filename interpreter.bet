@@ -239,10 +239,25 @@ Interpreter: AstInterface
           isClass:: trueValue;
           asClass::
             (# do THIS(LoxClass)[] -> value[] #);
+          arity::
+            (# initializer: ^LoxFunction;
+            do 'init' -> methods.lookup -> initializer[];
+               (if initializer[] <> NONE then
+                   initializer.arity -> value;
+                else
+                   0 -> value;   
+               if);
+            #);  
           call::
             (# instance: ^LoxInstance;
+               initializer: ^LoxFunction;
             do &LoxInstance[] -> instance[];
                THIS(LoxClass)[] -> instance.init;
+               'init' -> methods.lookup -> initializer[];
+               (if initializer[] <> NONE then
+                   instance[] -> initializer.bind -> initializer[];
+                   arguments[] -> initializer.call;
+               if);
                instance[] -> result[];
             #);  
        #);

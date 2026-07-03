@@ -35,7 +35,11 @@ Rule
 
 <FunDecl> ::= 'fun' <Function> ;
 
-<ClassDecl> ::= 'class' <Name> '{' <Functions> '}' ;
+<ClassDecl> ::= 'class' <Name> <SuperOpt> '{' <Functions> '}' ;
+
+<SuperOpt> ::? <Super> ;
+
+<Super> ::= '<' <Variable> ;
 
 <Functions> ::* <Function> ;
 
@@ -123,7 +127,10 @@ Rule
                   | <Text>
                   | <BoolExp>
                   | <NilExp>
+                  | <SuperExp>
                   | <Grouping> ;
+
+<SuperExp> ::= 'super' '.' <NameAppl> ;
 
 <Grouping> ::= '(' <Evaluation> ')' ;
 
@@ -149,5 +156,8 @@ Attribute
 (# distance: integer
 #)
 <ThisExp>:
+(# distance: integer
+#)
+<SuperExp>:
 (# distance: integer
 #)

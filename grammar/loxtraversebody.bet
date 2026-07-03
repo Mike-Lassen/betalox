@@ -67,7 +67,16 @@ do F.getFunction -> do_Function;
 
 -- do_ClassDecl_body: DoPart --
 do C.getName -> do_Name;
+   C.getSuperOpt -> do_SuperOpt;
    C.getFunctions -> do_Functions;
+
+-- do_SuperOpt_body: DoPart --
+do (if a.kind<>ast.kinds.optional then
+       a[] -> do_Super;
+   if);
+
+-- do_Super_body: DoPart --
+do S.getVariable -> do_Variable;
 
 -- do_Functions_body: DoPart --
 do F.newscan
@@ -189,6 +198,8 @@ do (if E.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        E[] -> do_NilExp;
+    // lox.SuperExp then
+       E[] -> do_SuperExp;
     // lox.Grouping then
        E[] -> do_Grouping;
        (* End sub-alternation <Primary> *)
@@ -278,6 +289,8 @@ do (if E.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        E[] -> do_NilExp;
+    // lox.SuperExp then
+       E[] -> do_SuperExp;
     // lox.Grouping then
        E[] -> do_Grouping;
        (* End sub-alternation <Primary> *)
@@ -345,6 +358,8 @@ do (if E.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        E[] -> do_NilExp;
+    // lox.SuperExp then
+       E[] -> do_SuperExp;
     // lox.Grouping then
        E[] -> do_Grouping;
        (* End sub-alternation <Primary> *)
@@ -408,6 +423,8 @@ do (if E.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        E[] -> do_NilExp;
+    // lox.SuperExp then
+       E[] -> do_SuperExp;
     // lox.Grouping then
        E[] -> do_Grouping;
        (* End sub-alternation <Primary> *)
@@ -469,6 +486,8 @@ do (if C.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        C[] -> do_NilExp;
+    // lox.SuperExp then
+       C[] -> do_SuperExp;
     // lox.Grouping then
        C[] -> do_Grouping;
        (* End sub-alternation <Primary> *)
@@ -528,6 +547,8 @@ do (if T.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        T[] -> do_NilExp;
+    // lox.SuperExp then
+       T[] -> do_SuperExp;
     // lox.Grouping then
        T[] -> do_Grouping;
        (* End sub-alternation <Primary> *)
@@ -573,6 +594,8 @@ do (if F.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        F[] -> do_NilExp;
+    // lox.SuperExp then
+       F[] -> do_SuperExp;
     // lox.Grouping then
        F[] -> do_Grouping;
        (* End sub-alternation <Primary> *)
@@ -612,6 +635,8 @@ do (if U.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        U[] -> do_NilExp;
+    // lox.SuperExp then
+       U[] -> do_SuperExp;
     // lox.Grouping then
        U[] -> do_Grouping;
        (* End sub-alternation <Primary> *)
@@ -665,9 +690,14 @@ do (if P.symbol
        (* End sub-alternation <BoolExp> *)
     // lox.NilExp then
        P[] -> do_NilExp;
+    // lox.SuperExp then
+       P[] -> do_SuperExp;
     // lox.Grouping then
        P[] -> do_Grouping;
     if);
+
+-- do_SuperExp_body: DoPart --
+do S.getNameAppl -> do_NameAppl;
 
 -- do_Grouping_body: DoPart --
 do G.getEvaluation -> do_Evaluation;

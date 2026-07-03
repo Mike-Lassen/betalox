@@ -48,6 +48,16 @@ lox_traverse:
        enter C[]
        <<SLOT do_ClassDecl_body: DoPart>>
        #);
+     do_SuperOpt: (* optional *)
+       (# a: ^astinterface.ast;
+       enter a[]
+       <<SLOT do_SuperOpt_body: DoPart>>
+       #);
+     do_Super: (* cons *)
+       (# S: ^lox.Super
+       enter S[]
+       <<SLOT do_Super_body: DoPart>>
+       #);
      do_Functions: (* list *)
        (# F: ^lox.Functions
        enter F[]
@@ -287,6 +297,11 @@ lox_traverse:
        (# P: ^lox.Primary
        enter P[]
        <<SLOT do_Primary_body: DoPart>>
+       #);
+     do_SuperExp: (* cons *)
+       (# S: ^lox.SuperExp
+       enter S[]
+       <<SLOT do_SuperExp_body: DoPart>>
        #);
      do_Grouping: (* cons *)
        (# G: ^lox.Grouping

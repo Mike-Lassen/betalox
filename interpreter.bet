@@ -233,10 +233,23 @@ Interpreter: AstInterface
      LoxClass: LoxCallable
        (# name: ^Text;
           methods: ^FunctionDictionary;
+          super: ^LoxClass;
           init:
             (#
             enter (name[], methods[])
             #);
+          lookupMethod:
+            (# name: ^Text;
+               method: ^LoxFunction;
+            enter name[]
+            do name[] -> methods.lookup -> method[];
+               (if method[] = NONE then
+                   (if super[] <> NONE then
+                       name[] -> super.lookupMethod -> method[];
+                   if);
+               if);
+            exit method[]
+            #);  
           asString::
             (#
             do name[] -> value[];
@@ -246,7 +259,7 @@ Interpreter: AstInterface
             (# do THIS(LoxClass)[] -> value[] #);
           arity::
             (# initializer: ^LoxFunction;
-            do 'init' -> methods.lookup -> initializer[];
+            do 'init' -> lookupMethod -> initializer[];
                (if initializer[] <> NONE then
                    initializer.arity -> value;
                 else
@@ -258,7 +271,7 @@ Interpreter: AstInterface
                initializer: ^LoxFunction;
             do &LoxInstance[] -> instance[];
                THIS(LoxClass)[] -> instance.init;
-               'init' -> methods.lookup -> initializer[];
+               'init' -> lookupMethod -> initializer[];
                (if initializer[] <> NONE then
                    instance[] -> initializer.bind -> initializer[];
                    arguments[] -> initializer.call;
@@ -298,7 +311,7 @@ Interpreter: AstInterface
             enter name[]   
             do name[] -> fields.lookup -> value[];
                (if value[] = NONE then
-                   name[] -> class.methods.lookup -> function[];
+                   name[] -> class.lookupMethod -> function[];
                    (if function[] <> NONE then
                        THIS(LoxInstance)[] -> function.bind -> value[];
                    if);
@@ -577,6 +590,7 @@ Interpreter: AstInterface
           classTypes: @
             (# void: (# exit 1 #);
                class: (# exit 2 #);
+               subClass: (# exit 3 #);
             #);
           currentClass: @integer;  
 
@@ -646,10 +660,24 @@ Interpreter: AstInterface
                       (# functions: ^loxcfl.Functions;
                          name: ^loxcfl.Name;
                          enclosingClass: @integer;
+                         superVisitor: @loxcfl.treeLevelVisitor
+                           (# visit_Super::
+                                (#
+                                do N.getVariable -> resolveExpression;
+                                   true -> hasSuper;
+                                #);
+                           #);
+                         hasSuper: @boolean;  
                       do currentClass -> enclosingClass;
                          classTypes.class -> currentClass;
                          N.getName->name[];
                          name.getText -> define;
+                         superVisitor[] -> (N.getSuperOpt).accept;
+                         (if hasSuper then
+                             classTypes.subClass -> currentClass;
+                             beginScope;
+                             'super' -> define;
+                         if);
                          beginScope;
                          'this' -> define;
                          N.getFunctions -> functions[];
@@ -665,6 +693,9 @@ Interpreter: AstInterface
                               (current[], functionType) -> resolveFunction;
                            #);
                          endScope;
+                         (if hasSuper then
+                             endScope;
+                         if);
                          enclosingClass -> currentClass;
                       #);
                     visit_IfStmt:: 
@@ -761,9 +792,19 @@ Interpreter: AstInterface
                     visit_ThisExp::
                       (#
                       do (if currentClass = classTypes.void then
-                             (N[], 'Can\'t use this ouside of a class.') -> error;
+                             (N[], 'Can\'t use \'this\' ouside of a class.') -> error;
                          if);
                          'this' ->  resolveLocal -> N.distance;
+                      #);
+                    visit_SuperExp::
+                      (#
+                      do (if currentClass = classTypes.void then
+                             (N[], 'Can\'t use \'super\' ouside of a class.') -> error;
+                         if);
+                         (if currentClass <> classTypes.subClass then
+                             (N[], 'Can\'t use \'super\' in a class with no superclass.') -> error;
+                         if);
+                         'super' -> resolveLocal -> N.distance;
                       #);  
                     visit_Addition:: 
                       (# 
@@ -964,13 +1005,29 @@ Interpreter: AstInterface
                     visit_ClassDecl::
                       (# name: ^loxcfl.Name;
                          value: ^LoxClass;
+                         super: ^LoxValue;
                          functions: ^loxcfl.Functions;
                          methods: ^FunctionDictionary;
+                         superVisitor: @loxcfl.treeLevelVisitor
+                           (# visit_Super::
+                                (#
+                                do N.getVariable -> evaluate -> super[];
+                                   (if NOT super.isClass then
+                                       (N[], 'super must evaluate to class') -> runtimeError;
+                                   if);
+                                #);
+                           #);
                       do N.getName->name[];
                          &LoxClass[] -> value[];
                          name.getText -> value.name[];
                          (if not ((name.getText, value[])->env.define) then
                              (N[], 'name already defined')->runtimeError;
+                         if);
+                         superVisitor[] -> (N.getSuperOpt).accept;
+                         super[] -> value.super[];
+                         (if super[] <> NONE then
+                             pushEnv;
+                             ('super', super[]) -> env.define;
                          if);
                          N.getFunctions -> functions[];
                          &FunctionDictionary[] -> methods[];
@@ -990,6 +1047,9 @@ Interpreter: AstInterface
                               (name.getText, method[]) -> methods.associate;
                            #);
                           methods[] -> value.methods[];
+                          (if super[] <> NONE then
+                             popEnv;
+                          if);
                       #);
                     visit_Block:: 
                       (# 
@@ -1232,6 +1292,21 @@ Interpreter: AstInterface
                       (#
                       do ('this', N.distance) -> env.getAt -> result[];
                       #);  
+                    visit_SuperExp::
+                      (# super: ^LoxClass;
+                         instance: ^LoxInstance;
+                         theNameAppl: ^NameAppl;
+                         function: ^LoxFunction;
+                      do ('super', N.distance) -> env.getAt -> super[];
+                         ('this', N.distance - 1) -> env.getAt -> instance[];
+                         N.getNameAppl -> theNameAppl[];
+                         theNameAppl.getText -> super.lookupMethod -> function[];
+                         (if function[] = NONE then
+                            (N[], 'did not find method') -> runtimeError;
+                         if);
+                         instance[] -> function.bind -> function[];
+                         function[] -> result[];
+                      #);
                     visit_Number:: 
                       (# input: ^Text;
                          theNumber: @LoxNumber;
